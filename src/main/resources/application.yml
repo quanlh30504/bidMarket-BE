@@ -1,3 +1,15 @@
+server:
+  port: 8080
+  servlet:
+      context-path: /bidMarket
 spring:
   application:
     name: bidMarket
+  datasource:
+      url: "jdbc:mysql://localhost:3306/bid_market"
+      username: root
+      password: Vuonga5k54tt1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
