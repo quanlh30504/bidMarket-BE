@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+@Data
 @Getter
 @Setter
 @Entity
@@ -19,10 +22,10 @@ public class Bid {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auction_id", nullable = false)
-    private Auction auctionId;
+    private Auction auction;
 
     @Column(nullable = false)
-    private UUID userId;  // Foreign Key to User entity
+    private UUID userId;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal bidAmount;

@@ -11,6 +11,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
+
     private final PaymentService paymentService;
 
     public PaymentController(PaymentService paymentService) {
@@ -29,10 +30,10 @@ public class PaymentController {
         return ResponseEntity.ok(paymentDto);
     }
 
-    @GetMapping("/auction/{auctionId}")
-    public ResponseEntity<List<PaymentDto>> getPaymentsByAuction(@PathVariable UUID auctionId) {
-        List<PaymentDto> payments = paymentService.getPaymentsByAuction(auctionId);
-        return ResponseEntity.ok(payments);
+    @GetMapping
+    public ResponseEntity<List<PaymentDto>> getAllPayments() {
+        List<PaymentDto> paymentDtos = paymentService.getAllPayments();
+        return ResponseEntity.ok(paymentDtos);
     }
 
     @PutMapping("/{id}")
@@ -44,6 +45,6 @@ public class PaymentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePayment(@PathVariable UUID id) {
         paymentService.deletePayment(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

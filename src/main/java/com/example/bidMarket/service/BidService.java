@@ -1,13 +1,11 @@
 package com.example.bidMarket.service;
 
 import com.example.bidMarket.dto.BidDto;
-import com.example.bidMarket.dto.BidQueueDto;
+import com.example.bidMarket.mapper.BidMapper;
 import com.example.bidMarket.model.Bid;
-import com.example.bidMarket.model.BidQueue;
-import com.example.bidMarket.repository.BidQueueRepository;
 import com.example.bidMarket.repository.BidRepository;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,58 +15,47 @@ import java.util.stream.Collectors;
 public class BidService {
     @Autowired
     private BidRepository bidRepository;
-    private BidQueueRepository bidQueueRepository;
+
+    @Autowired
+    private BidMapper bidMapper;
+
     public BidDto createBid(BidDto bidDto) {
-        Bid bid = new Bid();
-        bid.setAuctionId(bidDto.getAuctionId());
-        bid.setUserId(bidDto.getUserId());
-        bid.setBidAmount(bidDto.getBidAmount());
+        Bid bid = bidMapper.bidDtoToBid(bidDto);
+
+        bid.setStatus(Bid.Status.VALID);
         bid = bidRepository.save(bid);
-        return new BidDto(bid);
+
+        return bidMapper.bidToBidDto(bid);
     }
 
     public BidDto getBidById(UUID id) {
         return bidRepository.findById(id)
-                .map(BidDto::new)
+                .map(bidMapper::bidToBidDto)
                 .orElseThrow(() -> new RuntimeException("Bid not found"));
     }
 
     public List<BidDto> getBidsByAuction(UUID auctionId) {
-        return bidRepository.findById(auctionId).stream()
-                .map(BidDto::new)
+        return bidRepository.findByAuctionId(auctionId).stream()
+                .map(bidMapper::bidToBidDto)
                 .collect(Collectors.toList());
     }
 
-    public BidQueueDto addBidToQueue(BidQueueDto bidQueueDto) {
-        // Logic to add bid to queue
-        Bid bid = new Bid();
-        bid.setAuctionId(bidQueueDto.getAuctionId());
-        bid.setUserId(bidQueueDto.getUserId());
-        bid.setBidAmount(bidQueueDto.getBidAmount());
-        // Save to queue (this is a placeholder, replace with actual queue logic)
+    public BidDto updateBid(UUID id, BidDto bidDto) {
+        Bid bid = bidRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bid not found"));
+        // Cập nhật bid từ DTO
+        bidMapper.updateBidFromDto(bidDto, bid);
         bid = bidRepository.save(bid);
-        return new BidQueueDto(bid);
+        return bidMapper.bidToBidDto(bid);
     }
 
-    public List<BidQueueDto> getBidQueueByAuction(UUID auctionId) {
-        // Logic to get bid queue by auctionId
-        return bidRepository.findById(auctionId).stream()
-                .map(BidQueueDto::new)
+    public void deleteBid(UUID id) {
+        bidRepository.deleteById(id);
+    }
+
+    public List<BidDto> getAllBids() {
+        return bidRepository.findAll().stream()
+                .map(bidMapper::bidToBidDto)
                 .collect(Collectors.toList());
-    }
-
-    public BidQueue updateBidQueue(UUID id, BidQueueDto bidQueueDto) {
-        // Logic to update bid in queue
-        BidQueue bidQueue = bidQueueRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("BidQueue not found"));
-        bidQueue.setBidAmount(bidQueueDto.getBidAmount());
-
-        bidQueue = bidQueueRepository.save(bidQueue);
-        return new BidQueueDto(bidQueue);
-    }
-
-    public void deleteBidQueue(UUID id) {
-        // Logic to delete bid from queue
-        bidQueueRepository.deleteById(id);
     }
 }

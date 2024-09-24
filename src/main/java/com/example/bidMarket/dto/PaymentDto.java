@@ -9,8 +9,8 @@ import java.util.UUID;
 @Data
 public class PaymentDto {
     private UUID id;
-    private UUID auctionId;  // Foreign Key đến bảng Auction
-    private UUID buyerId;  // Foreign Key đến bảng User
+    private UUID auctionId;
+    private UUID buyerId;
     private BigDecimal paymentAmount;
     private String paymentStatus;  // Trạng thái (PENDING, COMPLETED, FAILED)
     private LocalDateTime paymentDue;

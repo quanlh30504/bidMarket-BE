@@ -18,7 +18,7 @@ public class TransactionLog {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID userId;  // Foreign Key to User entity
+    private UUID userId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -40,14 +40,12 @@ public class TransactionLog {
     @Column(columnDefinition = "TEXT")
     private String details;
 
-    // Enum for transaction type
     public enum TransactionType {
         WITHDRAWAL,
         PAYMENT,
         PAYOUT
     }
 
-    // Enum for transaction status
     public enum TransactionStatus {
         PENDING,
         COMPLETED,

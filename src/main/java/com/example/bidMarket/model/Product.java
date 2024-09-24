@@ -24,10 +24,10 @@ public class Product {
     private String description;
 
     @Column(nullable = false)
-    private Integer categoryId;  // Foreign Key to Category (replace later)
+    private Integer categoryId;
 
     @Column(nullable = false)
-    private UUID sellerId;  // Foreign Key to User (seller)
+    private UUID sellerId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "varchar(255) default 'ACTIVE'")
@@ -42,7 +42,6 @@ public class Product {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Enum for product status
     public enum ProductStatus {
         ACTIVE,
         INACTIVE,

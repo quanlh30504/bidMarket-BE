@@ -45,7 +45,7 @@ public class AuctionService {
     public AuctionDto updateAuction(UUID id, AuctionDto auctionDto) {
         Auction auction = auctionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Auction not found"));
-        // Cập nhật thông tin phiên đấu giá
+
         auction.setTitle(auctionDto.getTitle());
         auction.setCurrentPrice(auctionDto.getCurrentPrice());
         auction.setStartingPrice(auctionDto.getStartingPrice());

@@ -19,13 +19,13 @@ public class Payout {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auction_id", nullable = false)
-    private Auction auctionId;
+    private Auction auction;
 
     @Column(nullable = false)
-    private UUID sellerId;  // Foreign Key to User (seller)
+    private UUID sellerId;
 
     @Column(nullable = false)
-    private UUID buyerId;  // Foreign Key to User (buyer)
+    private UUID buyerId;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal amount;

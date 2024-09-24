@@ -9,7 +9,7 @@ import java.util.UUID;
 @Data
 public class TransactionLogDto {
     private UUID id;
-    private UUID userId;  // Foreign Key đến bảng User
+    private UUID userId;
     private String transactionType;  // Loại giao dịch (WITHDRAWAL, PAYMENT, PAYOUT)
     private BigDecimal amount;
     private String transactionStatus;  // Trạng thái (PENDING, COMPLETED, FAILED)

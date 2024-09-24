@@ -17,7 +17,7 @@ public class ProductImage {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID productId;  // Foreign Key to Product
+    private UUID productId;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String imageUrl;

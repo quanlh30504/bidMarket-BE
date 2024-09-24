@@ -11,6 +11,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/bids")
 public class BidController {
+
     private final BidService bidService;
 
     public BidController(BidService bidService) {
@@ -25,13 +26,13 @@ public class BidController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BidDto> getBidById(@PathVariable UUID id) {
-        BidDto bidDto = bidService.getBidById(id);
-        return ResponseEntity.ok(bidDto);
+        BidDto bid = bidService.getBidById(id);
+        return ResponseEntity.ok(bid);
     }
 
-    @GetMapping("/auction/{auctionId}")
-    public ResponseEntity<List<BidDto>> getBidsByAuction(@PathVariable UUID auctionId) {
-        List<BidDto> bids = bidService.getBidsByAuction(auctionId);
+    @GetMapping
+    public ResponseEntity<List<BidDto>> getAllBids() {
+        List<BidDto> bids = bidService.getAllBids();
         return ResponseEntity.ok(bids);
     }
 
@@ -43,7 +44,7 @@ public class BidController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBid(@PathVariable UUID id) {
-        bidService.deleteBidQueue(id);
-        return ResponseEntity.ok().build();
+        bidService.deleteBid(id);
+        return ResponseEntity.noContent().build();
     }
 }

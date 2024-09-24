@@ -22,7 +22,7 @@ public class Payment {
     private Auction auctionId;
 
     @Column(nullable = false)
-    private UUID buyerId;  // Reference to User entity
+    private UUID buyerId;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal paymentAmount;

@@ -36,7 +36,7 @@ public class BidQueue {
     @Column(nullable = false)
     private BidStatus status;
 
-    // Enum for bid status
+
     public enum BidStatus {
         PENDING,
         PROCESSED,

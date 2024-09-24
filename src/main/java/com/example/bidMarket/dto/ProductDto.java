@@ -10,8 +10,8 @@ public class ProductDto {
     private UUID id;
     private String name;
     private String description;  // Mô tả sản phẩm
-    private Integer categoryId;  // Foreign Key đến bảng Category
-    private UUID sellerId;  // Foreign Key đến bảng User
+    private Integer categoryId;
+    private UUID sellerId;
     private String status;  // Trạng thái (ACTIVE, INACTIVE, SOLD, REMOVED)
     private Integer stockQuantity;
     private LocalDateTime createdAt;

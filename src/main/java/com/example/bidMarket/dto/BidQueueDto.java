@@ -9,8 +9,8 @@ import java.util.UUID;
 @Data
 public class BidQueueDto {
     private UUID id;
-    private UUID auctionId;  // Foreign Key đến bảng Auction
-    private UUID userId;  // Foreign Key đến bảng User
+    private UUID auctionId;
+    private UUID userId;
     private BigDecimal bidAmount;
     private LocalDateTime bidTime;
     private LocalDateTime updatedAt;

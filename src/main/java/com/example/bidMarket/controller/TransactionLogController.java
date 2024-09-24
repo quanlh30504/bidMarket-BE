@@ -11,16 +11,17 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/transaction-logs")
 public class TransactionLogController {
+
     private final TransactionLogService transactionLogService;
 
     public TransactionLogController(TransactionLogService transactionLogService) {
         this.transactionLogService = transactionLogService;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<TransactionLogDto>> getTransactionLogsByUserId(@PathVariable UUID userId) {
-        List<TransactionLogDto> transactionLogs = transactionLogService.getTransactionLogsByUserId(userId);
-        return ResponseEntity.ok(transactionLogs);
+    @PostMapping
+    public ResponseEntity<TransactionLogDto> createTransactionLog(@RequestBody TransactionLogDto transactionLogDto) {
+        TransactionLogDto createdTransactionLog = transactionLogService.createTransactionLog(transactionLogDto);
+        return ResponseEntity.ok(createdTransactionLog);
     }
 
     @GetMapping("/{id}")
@@ -29,15 +30,21 @@ public class TransactionLogController {
         return ResponseEntity.ok(transactionLogDto);
     }
 
-    @PostMapping
-    public ResponseEntity<TransactionLogDto> createTransactionLog(@RequestBody TransactionLogDto transactionLogDto) {
-        TransactionLogDto createdLog = transactionLogService.createTransactionLog(transactionLogDto);
-        return ResponseEntity.ok(createdLog);
+    @GetMapping
+    public ResponseEntity<List<TransactionLogDto>> getAllTransactionLogs() {
+        List<TransactionLogDto> transactionLogs = transactionLogService.getAllTransactionLogs();
+        return ResponseEntity.ok(transactionLogs);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TransactionLogDto> updateTransactionLog(@PathVariable UUID id, @RequestBody TransactionLogDto transactionLogDto) {
+        TransactionLogDto updatedTransactionLog = transactionLogService.updateTransactionLog(id, transactionLogDto);
+        return ResponseEntity.ok(updatedTransactionLog);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransactionLog(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteTransactionLog(@PathVariable UUID id) {
         transactionLogService.deleteTransactionLog(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

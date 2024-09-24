@@ -21,7 +21,7 @@ public class Auction {
     private String title;
 
     @Column(nullable = false)
-    private UUID productId;  // Reference to Product
+    private UUID productId;
 
     @Column(nullable = false)
     private LocalDateTime startTime;

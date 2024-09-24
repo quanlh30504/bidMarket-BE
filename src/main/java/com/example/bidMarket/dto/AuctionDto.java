@@ -10,7 +10,7 @@ import java.util.UUID;
 public class AuctionDto {
     private UUID id;
     private String title;
-    private UUID productId;  // Foreign Key đến bảng Product
+    private UUID productId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private BigDecimal currentPrice;
