@@ -2,11 +2,14 @@ package com.example.bidMarket.service.impl;
 
 import com.example.bidMarket.dto.*;
 import com.example.bidMarket.mapper.UserMapper;
+import com.example.bidMarket.model.Profile;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.security.JwtTokenProvider;
 import com.example.bidMarket.service.UserService;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,11 +47,19 @@ public class UserServiceImpl implements UserService {
         this.applicationContext = applicationContext;
     }
 
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
+
     @Override
     @Transactional
     public UserDto createUser(UserCreateDto userCreateDto) {
         User user = userMapper.userCreateDtoToUser(userCreateDto);
         user.setPasswordHash(passwordEncoder.encode(userCreateDto.getPassword()));
+
+        Profile profile = new Profile();
+        profile.setUser(user);
+        user.setProfile(profile);
+
         User savedUser = userRepository.save(user);
         return userMapper.userToUserDto(savedUser);
     }
@@ -87,15 +98,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest) {
-        AuthenticationManager authenticationManager = applicationContext.getBean(AuthenticationManager.class);
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        logger.debug("Authenticating user: {}", loginRequest.getEmail());
+        try {
+            AuthenticationManager authenticationManager = applicationContext.getBean(AuthenticationManager.class);
+            logger.debug("AuthenManager bean retrieved successfully");
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.generateToken(authentication);
-        String refreshToken = tokenProvider.generateRefreshToken(authentication);
-        return new JwtAuthenticationResponse(jwt, refreshToken);
+            String jwt = tokenProvider.generateToken(authentication);
+            String refreshToken = tokenProvider.generateRefreshToken(authentication);
+            return new JwtAuthenticationResponse(jwt, refreshToken);
+        } catch (Exception e) {
+            logger.error("Unexpected error during authentication", e);
+            throw e;
+        }
     }
 
     @Override
@@ -112,5 +130,28 @@ public class UserServiceImpl implements UserService {
         }
 
         throw new RuntimeException("Invalid refresh token");
+    }
+
+    @Override
+    public ProfileDto getProfileByUserId(UUID userId) {
+        User user = userRepository.findById((userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return userMapper.profileToProfileDto(user.getProfile());
+    }
+
+    @Override
+    public ProfileDto updateProfile(UUID userId, ProfileDto profileDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Profile profile = user.getProfile();
+        if (profile == null) {
+            profile = new Profile();
+            profile.setUser(user);
+            user.setProfile(profile);
+        }
+
+        userMapper.updateProfileFromDto(profileDto, profile);
+        User updatedUser = userRepository.save(user);
+        return userMapper.profileToProfileDto(updatedUser.getProfile());
     }
 }

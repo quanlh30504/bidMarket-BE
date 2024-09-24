@@ -28,6 +28,7 @@ log:
   level:
     root: INFO
     org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
     com.example.bidMarket: DEBUG
 
 

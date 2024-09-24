@@ -5,12 +5,9 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class SellerProfileDto {
+public class ProfileDto {
     private UUID id;
-    private UUID userId;
     private String fullName;
     private String phoneNumber;
-    private String idCard;
     private String profileImageUrl;
-    private Double averageRating;
 }

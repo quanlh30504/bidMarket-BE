@@ -11,4 +11,5 @@ public class UserDto {
     private String email;
     private Role role;
     private boolean isBanned;
+    private ProfileDto profile;
 }

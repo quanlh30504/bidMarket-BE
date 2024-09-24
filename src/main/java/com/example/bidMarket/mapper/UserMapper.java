@@ -2,8 +2,7 @@ package com.example.bidMarket.mapper;
 
 import com.example.bidMarket.dto.*;
 import com.example.bidMarket.model.Address;
-import com.example.bidMarket.model.BidderProfile;
-import com.example.bidMarket.model.SellerProfile;
+import com.example.bidMarket.model.Profile;
 import com.example.bidMarket.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,16 +10,20 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
+    @Mapping(target = "profile", source = "profile")
     UserDto userToUserDto(User user);
+
+    @Mapping(target = "profile", ignore = true)
     User userCreateDtoToUser(UserCreateDto userCreateDto);
+
+
+    @Mapping(target = "profile", ignore = true)
     void updateUserFromDto(UserUpdateDto userUpdateDto, @MappingTarget User user);
 
-    @Mapping(target = "userId", source = "user.id")
-    BidderProfileDto bidderProfileToBidderProfileDto(BidderProfile bidderProfile);
+    ProfileDto profileToProfileDto(Profile profile);
 
-    @Mapping(target = "userId", source = "user.id")
-    SellerProfileDto sellerProfileToSellerProfileDto(SellerProfile sellerProfile);
+    Profile profileDtoToProfile(ProfileDto profileDto);
 
-    @Mapping(target = "userId", source = "user.id")
-    AddressDto addressToAddressDto(Address address);
+    @Mapping(target = "user", ignore = true)
+    void updateProfileFromDto(ProfileDto profileDto, @MappingTarget Profile profile);
 }

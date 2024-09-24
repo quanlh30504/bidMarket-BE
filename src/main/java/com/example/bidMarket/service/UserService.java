@@ -15,4 +15,6 @@ public interface UserService {
     JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest);
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
 
+    ProfileDto getProfileByUserId(UUID userId);
+    ProfileDto updateProfile(UUID userId, ProfileDto profileDto);
 }

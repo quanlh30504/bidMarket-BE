@@ -1,10 +1,13 @@
 package com.example.bidMarket.security;
 
+import com.example.bidMarket.controller.UserController;
 import com.example.bidMarket.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final ApplicationContext applicationContext;
 
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserDetailsService userDetailsService;
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, ApplicationContext applicationContext, UserDetailsService userDetailsService) {
         this.tokenProvider = tokenProvider;
@@ -37,10 +41,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
-
+            logger.debug("extracted jwt: {}", jwt);
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromToken(jwt);
-
+                logger.debug("Username: {}", username);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
