@@ -24,13 +24,24 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
-        User user = userRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> {
-                    logger.error("User not found with id: {}", id);
-                    return new UsernameNotFoundException("User not found with email: " + id);
-                }
-                );
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user;
+        try {
+            UUID userId = UUID.fromString(email);
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> {
+                        logger.error("User not found with id: {}", userId);
+                        return new UsernameNotFoundException("User not found with id: " + userId);
+                    });
+        } catch (IllegalArgumentException e) {
+            // If username is not a valid UUID, assume it's an email
+            user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        logger.error("User not found with email: {}", email);
+                        return new UsernameNotFoundException("User not found with email: " + email);
+                    });
+        }
+
 
         return new org.springframework.security.core.userdetails.User(
                 user.getId().toString(),
