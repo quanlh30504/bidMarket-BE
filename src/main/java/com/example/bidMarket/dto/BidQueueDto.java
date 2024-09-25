@@ -3,6 +3,7 @@ package com.example.bidMarket.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ public class BidQueueDto {
     private UUID auctionId;
     private UUID userId;
     private BigDecimal bidAmount;
-    private LocalDateTime bidTime;
-    private LocalDateTime updatedAt;
+    private Timestamp bidTime;
+    private Timestamp updatedAt;
     private String status;  // Trạng thái (PENDING, PROCESSED, FAILED)
 }

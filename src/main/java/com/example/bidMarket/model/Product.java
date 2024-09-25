@@ -1,52 +1,45 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "products")
 public class Product {
 
     @Id
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description")
     private String description;
 
-    @Column(nullable = false)
-    private Integer categoryId;
+//    @ManyToOne
+//    @JoinColumn(name = "category_id")
+//    private List<Category> categories = new ArrayList<>();
 
-    @Column(nullable = false)
-    private UUID sellerId;
+    @OneToOne
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "varchar(255) default 'ACTIVE'")
-    private ProductStatus status = ProductStatus.ACTIVE;
+    @Column(name = "status", length = 10)
+    private ProductStatus status;
 
-    @Column(nullable = false, columnDefinition = "int default 0")
-    private int stockQuantity = 0;
+    @Column(name = "stock_quantity", columnDefinition = "INT DEFAULT '0'")
+    private int stockQuantity;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
 
-    public enum ProductStatus {
-        ACTIVE,
-        INACTIVE,
-        SOLD,
-        REMOVED
-    }
 }
-

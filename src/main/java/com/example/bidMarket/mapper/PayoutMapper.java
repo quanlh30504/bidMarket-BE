@@ -7,10 +7,10 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface PayoutMapper {
-    @Mapping(target = "auctionId", source = "auction") // Ánh xạ từ auction.id sang auctionId
+    @Mapping(target = "auctionId", source = "auction.id") // Ánh xạ từ auction.id sang auctionId
     PayoutDto payoutToPayoutDto(Payout payout);
 
-    @Mapping(target = "auction", source = "auctionId") // Ánh xạ từ auctionId về auction.id
+    @Mapping(target = "auction.id", source = "auctionId") // Ánh xạ từ auctionId về auction.id
     Payout payoutDtoToPayout(PayoutDto payoutDto);
 }
 

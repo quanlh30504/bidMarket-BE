@@ -1,11 +1,12 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,56 +15,43 @@ import lombok.Setter;
 public class Auction {
 
     @Id
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "title", length = 255, nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private UUID productId;
+    @OneToOne
+    @PrimaryKeyJoinColumn(name = "product_id", referencedColumnName = "id")
+    private Product product;
 
-    @Column(nullable = false)
-    private LocalDateTime startTime;
+    @Column(name = "start_time", nullable = false)
+    private Timestamp startTime;
 
-    @Column(nullable = false)
-    private LocalDateTime endTime;
+    @Column(name = "end_time", nullable = false)
+    private Timestamp endTime;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "current_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal currentPrice;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "starting_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal startingPrice;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
+    @Column(name = "status", nullable = false, length = 10)
+    private AuctionStatus status;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "minimum_bid_increment", precision = 10, scale = 2, nullable = false)
     private BigDecimal minimumBidIncrement;
 
-    @Column(nullable = false, columnDefinition = "int default 0")
-    private int extensionCount;
+    @Column(name = "extension_count", nullable = false)
+    private int extensionCount = 0;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
 
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    // Getters and Setters
-
-    public enum Status {
-        PENDING,
-        OPEN,
-        CLOSED,
-        CANCELED,
-        COMPLETED,
-        EXTENDED
-    }
 }

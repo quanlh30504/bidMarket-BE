@@ -1,11 +1,12 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,42 +15,32 @@ import lombok.Setter;
 public class TransactionLog {
 
     @Id
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false)
-    private UUID userId;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "transaction_type")
     private TransactionType transactionType;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "amount", precision = 10, scale = 2)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "varchar(255) default 'PENDING'")
-    private TransactionStatus transactionStatus = TransactionStatus.PENDING;
+    @Column(name = "transaction_status", columnDefinition = "ENUM('PENDING','COMPLETED','FAILED') DEFAULT 'PENDING'")
+    private TransactionStatus transactionStatus;
 
-    @Column(nullable = false)
-    private LocalDateTime initiatedAt = LocalDateTime.now();
+    @Column(name = "initiated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp initiatedAt;
 
-    @Column
-    private LocalDateTime completedAt;
+    @Column(name = "completed_at", columnDefinition = "TIMESTAMP NULL DEFAULT NULL")
+    private Timestamp completedAt;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "details", columnDefinition = "TEXT")
     private String details;
 
-    public enum TransactionType {
-        WITHDRAWAL,
-        PAYMENT,
-        PAYOUT
-    }
-
-    public enum TransactionStatus {
-        PENDING,
-        COMPLETED,
-        FAILED
-    }
 }
-

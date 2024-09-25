@@ -1,32 +1,35 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.sql.Timestamp;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "product_images")
+@Table(name = "productimages")
 public class ProductImage {
 
     @Id
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false)
-    private UUID productId;
+    @OneToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean isPrimary = false;
+    @Column(name = "is_primary", columnDefinition = "TINYINT(1) DEFAULT '0'")
+    private boolean isPrimary;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
 
 }
-

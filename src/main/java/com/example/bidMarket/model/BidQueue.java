@@ -1,46 +1,43 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.UUID;
+
 @Setter
+@Getter
 @Entity
-@Table(name = "bid_queues")
+@Table(name = "bidqueues")
 public class BidQueue {
 
     @Id
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false)
-    private UUID auctionId;  // Foreign Key to Auction
+    @OneToOne
+    @JoinColumn(name = "auction_id", nullable = false)
+    private Auction auction;
 
-    @Column(nullable = false)
-    private UUID userId;  // Foreign Key to User
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "bid_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal bidAmount;
 
-    @Column(nullable = false)
-    private LocalDateTime bidTime = LocalDateTime.now();
+    @Column(name = "bid_time", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp bidTime;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private BidStatus status;
+    @Column(name = "status", nullable = false, length = 10)
+    private BidQueueStatus status;
 
-
-    public enum BidStatus {
-        PENDING,
-        PROCESSED,
-        FAILED
-    }
 }
-

@@ -1,49 +1,46 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.UUID;
+
 @Setter
+@Getter
 @Entity
 @Table(name = "payments")
 public class Payment {
 
     @Id
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "auction_id", nullable = false)
-    private Auction auctionId;
+    private Auction auction;
 
-    @Column(nullable = false)
-    private UUID buyerId;
+    @OneToOne
+    @JoinColumn(name = "buyer_id", nullable = false)
+    private User buyer;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "payment_amount", precision = 10, scale = 2)
     private BigDecimal paymentAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "varchar(255) default 'PENDING'")
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    @Column(name = "payment_status", nullable = false, length = 10)
+    private PaymentStatus paymentStatus;
 
-    @Column
-    private LocalDateTime paymentDue;
+    @Column(name = "payment_due", columnDefinition = "TIMESTAMP DEFAULT NULL")
+    private Timestamp paymentDue;
 
-    @Column
-    private LocalDateTime paymentMadeAt;
+    @Column(name = "payment_made_at", columnDefinition = "TIMESTAMP DEFAULT NULL")
+    private Timestamp paymentMadeAt;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "system_fee", precision = 10, scale = 2)
     private BigDecimal systemFee;
 
-    // Enum for payment status
-    public enum PaymentStatus {
-        PENDING,
-        COMPLETED,
-        FAILED
-    }
 }
