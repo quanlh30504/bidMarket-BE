@@ -1,6 +1,7 @@
 package com.example.bidMarket.controller;
 
 import com.example.bidMarket.dto.BidDto;
+import com.example.bidMarket.dto.BidQueueDto;
 import com.example.bidMarket.service.BidService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,11 @@ public class BidController {
         return ResponseEntity.ok(bid);
     }
 
+    @GetMapping("/auction/{auctionId}")
+    public ResponseEntity<List<BidDto>> getBidByAuction(@PathVariable UUID auctionId) {
+        List<BidDto> bidDtos = bidService.getBidsByAuction(auctionId);
+        return ResponseEntity.ok(bidDtos);
+    }
     @GetMapping
     public ResponseEntity<List<BidDto>> getAllBids() {
         List<BidDto> bids = bidService.getAllBids();

@@ -8,10 +8,13 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface BidMapper {
-    @Mapping(target = "auctionId", source = "auction.id") // ánh xạ auctionId
+
+    @Mapping(target = "auctionId", source = "auction.id") // Ánh xạ auctionId từ auction.id
+    @Mapping(target = "userId", source = "user.id") // Ánh xạ userId từ user.id
     BidDto bidToBidDto(Bid bid);
 
-    @Mapping(target = "auction.id", source = "auctionId") // ánh xạ từ BidDto về Bid
+    @Mapping(target = "auction.id", source = "auctionId") // Ánh xạ từ BidDto về Bid
+    @Mapping(target = "user.id", source = "userId") // Ánh xạ từ BidDto về Bid
     Bid bidDtoToBid(BidDto bidDto);
 
     void updateBidFromDto(BidDto bidDto, @MappingTarget Bid bid);

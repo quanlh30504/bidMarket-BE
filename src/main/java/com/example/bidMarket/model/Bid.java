@@ -1,52 +1,43 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Data
-@Getter
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.UUID;
+
 @Setter
+@Getter
 @Entity
 @Table(name = "bids")
 public class Bid {
 
     @Id
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "auction_id", nullable = false)
     private Auction auction;
 
-    @Column(nullable = false)
-    private UUID userId;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "bid_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal bidAmount;
 
-    @Column(nullable = false)
-    private LocalDateTime bidTime = LocalDateTime.now();
+    @Column(name = "bid_time", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp bidTime;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
+    @Column(name = "status", nullable = false, length = 10)
+    private BidStatus status;
 
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public enum Status {
-        VALID,
-        INVALID
-    }
 }

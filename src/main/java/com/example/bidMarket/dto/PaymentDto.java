@@ -3,6 +3,7 @@ package com.example.bidMarket.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public class PaymentDto {
     private UUID buyerId;
     private BigDecimal paymentAmount;
     private String paymentStatus;  // Trạng thái (PENDING, COMPLETED, FAILED)
-    private LocalDateTime paymentDue;
-    private LocalDateTime paymentMadeAt;
+    private Timestamp paymentDue;
+    private Timestamp paymentMadeAt;
     private BigDecimal systemFee;
 }

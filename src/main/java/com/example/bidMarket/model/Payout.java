@@ -1,11 +1,12 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,46 +15,43 @@ import lombok.Setter;
 public class Payout {
 
     @Id
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "auction_id", nullable = false)
     private Auction auction;
 
-    @Column(nullable = false)
-    private UUID sellerId;
+    @OneToOne
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 
-    @Column(nullable = false)
-    private UUID buyerId;
+    @OneToOne
+    @JoinColumn(name = "buyer_id", nullable = false)
+    private User buyer;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "amount", precision = 10, scale = 2)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "varchar(255) default 'PENDING'")
-    private PayoutStatus payoutStatus = PayoutStatus.PENDING;
+    @Column(name = "payout_status", nullable = false, length = 10)
+    private PayoutStatus payoutStatus;
 
-    @Column
-    private LocalDateTime payoutInitiatedAt;
+    @Column(name = "payout_initiated_at", columnDefinition = "TIMESTAMP DEFAULT NULL")
+    private Timestamp payoutInitiatedAt;
 
-    @Column
-    private LocalDateTime payoutCompletedAt;
+    @Column(name = "payout_completed_at", columnDefinition = "TIMESTAMP DEFAULT NULL")
+    private Timestamp payoutCompletedAt;
 
-    @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean confirmationRequired = true;
+    @Column(name = "confirmation_required", columnDefinition = "TINYINT(1) DEFAULT '1'")
+    private boolean confirmationRequired;
 
-    @Column
-    private LocalDateTime confirmationReceivedAt;
+    @Column(name = "confirmation_received_at", columnDefinition = "TIMESTAMP DEFAULT NULL")
+    private Timestamp confirmationReceivedAt;
 
-    @Column
-    private LocalDateTime autoPayoutDue;
+    @Column(name = "auto_payout_due", columnDefinition = "TIMESTAMP DEFAULT NULL")
+    private Timestamp autoPayoutDue;
 
-    // Enum for payout status
-    public enum PayoutStatus {
-        PENDING,
-        COMPLETED,
-        FAILED
-    }
+
 }
-

@@ -3,6 +3,7 @@ package com.example.bidMarket.service;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.mapper.BidMapper;
 import com.example.bidMarket.model.Bid;
+import com.example.bidMarket.model.BidStatus;
 import com.example.bidMarket.repository.BidRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class BidService {
     public BidDto createBid(BidDto bidDto) {
         Bid bid = bidMapper.bidDtoToBid(bidDto);
 
-        bid.setStatus(Bid.Status.VALID);
+        bid.setStatus(BidStatus.VALID);
         bid = bidRepository.save(bid);
 
         return bidMapper.bidToBidDto(bid);

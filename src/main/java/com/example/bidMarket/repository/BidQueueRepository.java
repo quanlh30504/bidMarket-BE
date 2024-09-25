@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BidQueueRepository extends JpaRepository<BidQueue, UUID> {
-    Optional<BidQueue> findByAuctionId(UUID auctionId);
+    Optional<BidQueue> findByAuctionId(UUID auction);
 }
