@@ -1,7 +1,6 @@
 package com.example.bidMarket.mapper;
 
 import com.example.bidMarket.dto.*;
-import com.example.bidMarket.model.Address;
 import com.example.bidMarket.model.Profile;
 import com.example.bidMarket.model.User;
 import org.mapstruct.Mapper;
@@ -12,10 +11,6 @@ import org.mapstruct.MappingTarget;
 public interface UserMapper {
     @Mapping(target = "profile", source = "profile")
     UserDto userToUserDto(User user);
-
-    @Mapping(target = "profile", ignore = true)
-    User userCreateDtoToUser(UserCreateDto userCreateDto);
-
 
     @Mapping(target = "profile", ignore = true)
     void updateUserFromDto(UserUpdateDto userUpdateDto, @MappingTarget User user);

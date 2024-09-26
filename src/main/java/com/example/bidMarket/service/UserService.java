@@ -1,13 +1,17 @@
 package com.example.bidMarket.service;
 
 import com.example.bidMarket.dto.*;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import com.example.bidMarket.dto.Request.LoginRequest;
+import com.example.bidMarket.dto.Request.RefreshTokenRequest;
+import com.example.bidMarket.dto.Request.RegisterRequest;
+import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
+import com.example.bidMarket.dto.Response.RegisterResponse;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    UserDto createUser(UserCreateDto userCreateDto);
+    RegisterResponse createUser(RegisterRequest registerRequest) throws Exception;
     UserDto getUserById(UUID id);
     List<UserDto> getAllUsers();
     UserDto updateUser(UUID id, UserUpdateDto userUpdateDto);

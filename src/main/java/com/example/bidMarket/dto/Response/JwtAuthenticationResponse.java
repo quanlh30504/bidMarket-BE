@@ -1,4 +1,4 @@
-package com.example.bidMarket.dto;
+package com.example.bidMarket.dto.Response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

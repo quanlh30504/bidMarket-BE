@@ -1,4 +1,4 @@
-package com.example.bidMarket.dto;
+package com.example.bidMarket.dto.Request;
 
 import lombok.Data;
 

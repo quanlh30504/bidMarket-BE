@@ -1,6 +1,11 @@
 package com.example.bidMarket.controller;
 
 import com.example.bidMarket.dto.*;
+import com.example.bidMarket.dto.Request.LoginRequest;
+import com.example.bidMarket.dto.Request.RefreshTokenRequest;
+import com.example.bidMarket.dto.Request.RegisterRequest;
+import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
+import com.example.bidMarket.dto.Response.RegisterResponse;
 import com.example.bidMarket.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -24,9 +29,9 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserCreateDto userCreateDto) {
-        UserDto userDto = userService.createUser(userCreateDto);
-        return ResponseEntity.ok(userDto);
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) throws Exception {
+        RegisterResponse registerResponse = userService.createUser(registerRequest);
+        return ResponseEntity.ok(registerResponse);
     }
 
     @PostMapping("/signin")

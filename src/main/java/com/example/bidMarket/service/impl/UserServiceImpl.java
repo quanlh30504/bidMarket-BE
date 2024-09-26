@@ -1,16 +1,25 @@
 package com.example.bidMarket.service.impl;
 
 import com.example.bidMarket.dto.*;
+import com.example.bidMarket.dto.Request.LoginRequest;
+import com.example.bidMarket.dto.Request.RefreshTokenRequest;
+import com.example.bidMarket.dto.Request.RegisterRequest;
+import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
+import com.example.bidMarket.dto.Response.RegisterResponse;
+import com.example.bidMarket.mapper.RegisterMapper;
 import com.example.bidMarket.mapper.UserMapper;
+import com.example.bidMarket.model.IdCard;
 import com.example.bidMarket.model.Profile;
+import com.example.bidMarket.model.Role;
 import com.example.bidMarket.model.User;
+import com.example.bidMarket.repository.IdCardRepository;
+import com.example.bidMarket.repository.ProfileRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.security.JwtTokenProvider;
 import com.example.bidMarket.service.UserService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +27,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,40 +36,37 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final ApplicationContext applicationContext;
-
-    public UserServiceImpl(UserRepository userRepository,
-                           UserMapper userMapper,
-                           PasswordEncoder passwordEncoder,
-                           JwtTokenProvider tokenProvider,
-                           ApplicationContext applicationContext) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenProvider = tokenProvider;
-        this.applicationContext = applicationContext;
-    }
+    private final RegisterMapper registerMapper;
+    private final ProfileRepository profileRepository;
+    private final IdCardRepository idCardRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 
     @Override
     @Transactional
-    public UserDto createUser(UserCreateDto userCreateDto) {
-        User user = userMapper.userCreateDtoToUser(userCreateDto);
-        user.setPasswordHash(passwordEncoder.encode(userCreateDto.getPassword()));
+    public RegisterResponse createUser(RegisterRequest registerRequest) throws Exception{
+        if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+            throw new Exception("Email existed");
+        }
 
-        Profile profile = new Profile();
-        profile.setUser(user);
+        User user = registerMapper.requestToUser(registerRequest);
+
+        Profile profile = registerMapper.requestToProfile(user, registerRequest);
         user.setProfile(profile);
 
-        User savedUser = userRepository.save(user);
-        return userMapper.userToUserDto(savedUser);
+        if (user.getRole() == Role.SELLER) {
+            IdCard idCard = registerMapper.requestToIdCard(user, registerRequest);
+            user.setIdCard(idCard);
+        }
+        return registerMapper.toRegisterResponse(userRepository.save(user));
     }
 
     @Override

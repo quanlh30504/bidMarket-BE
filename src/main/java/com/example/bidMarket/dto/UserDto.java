@@ -1,5 +1,6 @@
 package com.example.bidMarket.dto;
 
+import com.example.bidMarket.model.IdCard;
 import com.example.bidMarket.model.Role;
 import lombok.Data;
 
