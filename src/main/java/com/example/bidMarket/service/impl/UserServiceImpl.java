@@ -16,6 +16,7 @@ import com.example.bidMarket.repository.IdCardRepository;
 import com.example.bidMarket.repository.ProfileRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.security.JwtTokenProvider;
+import com.example.bidMarket.service.ImageService;
 import com.example.bidMarket.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
     private final RegisterMapper registerMapper;
     private final ProfileRepository profileRepository;
     private final IdCardRepository idCardRepository;
-
+    private final ImageService imageService;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 
@@ -57,16 +58,33 @@ public class UserServiceImpl implements UserService {
             throw new Exception("Email existed");
         }
 
+        // Create user
         User user = registerMapper.requestToUser(registerRequest);
+        user = userRepository.save(user);
 
+        // Create and save profile
         Profile profile = registerMapper.requestToProfile(user, registerRequest);
-        user.setProfile(profile);
 
+        profile = profileRepository.save(profile);
+        user.setProfile(profile);
+        user = userRepository.save(user);
+        
+        // handle profile image upload
+        if (registerRequest.getProfileImageUrl() != null && !registerRequest.getProfileImageUrl().isEmpty()) {
+            String profileImageUrl = imageService.uploadUserAvatar(user.getId(), registerRequest.getProfileImageUrl());
+            profile.setProfileImageUrl(profileImageUrl);
+        }
+
+        profile = profileRepository.save(profile);
+
+        user.setProfile(profile);
         if (user.getRole() == Role.SELLER) {
             IdCard idCard = registerMapper.requestToIdCard(user, registerRequest);
             user.setIdCard(idCard);
         }
-        return registerMapper.toRegisterResponse(userRepository.save(user));
+
+        user = userRepository.save(user);
+        return registerMapper.toRegisterResponse(user);
     }
 
     @Override

@@ -2,13 +2,12 @@ package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Entity
-@Table(name = "product_images")
 public class ProductImage {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -24,6 +23,7 @@ public class ProductImage {
     @Column(name = "is_primary")
     private boolean isPrimary;
 
+    @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 }
