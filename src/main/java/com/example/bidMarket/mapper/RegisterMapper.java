@@ -27,7 +27,7 @@ public class RegisterMapper {
                 .user(user)  // Gán user đã tạo trước đó
                 .fullName(request.getFullName())
                 .phoneNumber(request.getPhoneNumber())
-                .profileImageUrl(request.getProfileImageUrl())
+//                .profileImageUrl(request.getProfileImageUrl())
                 .build();
     }
 
