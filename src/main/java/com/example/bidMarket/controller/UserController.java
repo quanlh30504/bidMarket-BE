@@ -10,9 +10,11 @@ import com.example.bidMarket.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +30,13 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) throws Exception {
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RegisterResponse> register(
+            @RequestPart("registerRequest") @Valid RegisterRequest registerRequest,
+            @RequestPart(value = "profileImageUrl", required = false) MultipartFile profileImageUrl) throws Exception {
+
+        registerRequest.setProfileImageUrl(profileImageUrl);
+
         RegisterResponse registerResponse = userService.createUser(registerRequest);
         return ResponseEntity.ok(registerResponse);
     }
