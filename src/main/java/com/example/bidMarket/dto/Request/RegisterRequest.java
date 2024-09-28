@@ -2,6 +2,7 @@ package com.example.bidMarket.dto.Request;
 
 import com.example.bidMarket.Enum.Role;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -12,7 +13,7 @@ public class RegisterRequest {
     private Role role;
     private String fullName;
     private String phoneNumber;
-    private String profileImageUrl;
+    private MultipartFile profileImageUrl;
 
     // Chỉ áp dụng nếu role là SELLER
     private String idCard;

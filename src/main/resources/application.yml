@@ -51,6 +51,18 @@ log:
     org.springframework.web: DEBUG
     com.example.bidMarket: DEBUG
 
+
+aws:
+  access:
+    key:
+      id: ${AWS_ACCESS_KEY_ID}
+  secret:
+    access:
+      key: ${AWS_SECRET_ACCESS_KEY}
+  s3:
+    region: ${AWS_S3_REGION}
+    bucket: ${AWS_S3_BUCKET}
+
 payment:
   vnPay:
     url: ${PAY_URL}
