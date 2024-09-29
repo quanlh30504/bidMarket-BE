@@ -1,10 +1,12 @@
 package com.example.bidMarket.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Data
 @Entity
 @Table(name = "product_images")
 public class ProductImage {
@@ -17,7 +19,10 @@ public class ProductImage {
     private Product product;
 
     @Column(name = "image_url", nullable = false)
-    private String imageURL;
+    private String imageUrl;
+
+    @Column(name = "is_primary")
+    private boolean isPrimary;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

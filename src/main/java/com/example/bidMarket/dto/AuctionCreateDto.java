@@ -7,13 +7,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class AuctionDto {
+public class AuctionCreateDto {
     private String title;
+    private ProductDto productDto;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private BigDecimal currentPrice;
     private BigDecimal startPrice;
-    private AuctionStatus status;
+    private AuctionStatus auctionStatus;
     private BigDecimal minimumBidIncrement;
     private int extensionCount;
 }

@@ -2,12 +2,13 @@ package com.example.bidMarket.model;
 
 import com.example.bidMarket.Enum.AuctionStatus;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
+@Data
 @Entity
 @Table(name = "auctions")
 public class Auction {
