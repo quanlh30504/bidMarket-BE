@@ -17,7 +17,7 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @PostMapping()
-    public ResponseEntity<AuctionDto> createAuction (@RequestBody AuctionCreateRequest request) {
+    public ResponseEntity<AuctionDto> createAuction (@RequestBody AuctionCreateRequest request) throws Exception {
         return ResponseEntity.ok(auctionService.createAuction(request));
     }
     @PutMapping("/{auctionId}/status")
