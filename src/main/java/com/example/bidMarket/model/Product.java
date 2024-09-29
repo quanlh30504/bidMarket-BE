@@ -14,6 +14,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Builder
 @Table(name = "products")
 @AllArgsConstructor
 @NoArgsConstructor

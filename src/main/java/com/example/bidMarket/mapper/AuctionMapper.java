@@ -37,27 +37,13 @@ public class AuctionMapper {
     }
 
     public User auctionCreateToUser(AuctionCreateRequest auctionCreateRequest) {
-        UUID sellerId = auctionCreateRequest.getProductDto().getSeller();
+        UUID sellerId = auctionCreateRequest.getProductDto().getSellerId();
         return userRepository.findById(sellerId)
                 .orElseThrow(() -> new RuntimeException("Seller not found with id: " + sellerId));
     }
 
-    public Product auctionCreateToProduct(AuctionCreateRequest auctionCreateRequest) {
-        Product product = new Product();
-        product.setName(auctionCreateRequest.getProductDto().getName());
-        product.setDescription(auctionCreateRequest.getProductDto().getDescription());
-        product.setSeller(auctionCreateToUser(auctionCreateRequest));
-        product.setStatus(ProductStatus.INACTIVE);
-        product.setStockQuantity(auctionCreateRequest.getProductDto().getStockQuantity());
-
-        if (auctionCreateRequest.getProductDto().getProductImages() != null && !auctionCreateRequest.getProductDto().getProductImages().isEmpty()) {
-            List<ProductImage> productImages = auctionCreateRequest.getProductDto().getProductImages().stream()
-                    .map(image -> productMapper.productImageDtoToProductImage(image))
-                    .collect(Collectors.toList());
-            product.setProductImages(productImages);
-        }
-
-        return product;
+    public Product auctionCreateToProduct(AuctionCreateRequest auctionCreateRequest) throws Exception {
+        return productMapper.productDtoToProduct(auctionCreateRequest.getProductDto());
     }
 
     public AuctionDto auctionToAuctionDto(Auction auction) {

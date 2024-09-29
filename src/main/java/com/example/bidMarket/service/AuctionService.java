@@ -7,6 +7,6 @@ import com.example.bidMarket.dto.AuctionDto;
 import java.util.UUID;
 
 public interface AuctionService {
-    public AuctionDto createAuction (AuctionCreateRequest auctionCreateRequest);
+    public AuctionDto createAuction (AuctionCreateRequest auctionCreateRequest) throws Exception;
     public AuctionDto changeAuctionStatus (UUID id, AuctionStatus status) throws Exception;
 }

@@ -35,7 +35,7 @@ public class AuctionServiceImpl implements AuctionService {
 
     @Override
     @Transactional
-    public AuctionDto createAuction(AuctionCreateRequest auctionCreateRequest) {
+    public AuctionDto createAuction(AuctionCreateRequest auctionCreateRequest) throws Exception {
         // Tạo Product entity từ DTO
         Product product = auctionMapper.auctionCreateToProduct(auctionCreateRequest);
         List<ProductImageDto> productImageDtoList = auctionCreateRequest.getProductDto().getProductImages();
@@ -58,6 +58,7 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
+    @Transactional
     public AuctionDto changeAuctionStatus(UUID id, AuctionStatus status) throws Exception {
         Auction auction = auctionRepository.findById(id).orElseThrow(() -> new Exception("Not found auction id"));
         if (auction.getStatus() == AuctionStatus.COMPLETED || auction.getStatus() == AuctionStatus.CLOSED) {
