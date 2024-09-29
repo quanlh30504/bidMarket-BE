@@ -10,7 +10,7 @@ import com.example.bidMarket.mapper.RegisterMapper;
 import com.example.bidMarket.mapper.UserMapper;
 import com.example.bidMarket.model.IdCard;
 import com.example.bidMarket.model.Profile;
-import com.example.bidMarket.model.Role;
+import com.example.bidMarket.Enum.Role;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.IdCardRepository;
 import com.example.bidMarket.repository.ProfileRepository;

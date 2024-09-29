@@ -1,6 +1,6 @@
 package com.example.bidMarket.dto.Request;
 
-import com.example.bidMarket.model.Role;
+import com.example.bidMarket.Enum.Role;
 import lombok.Data;
 
 import java.time.LocalDate;
