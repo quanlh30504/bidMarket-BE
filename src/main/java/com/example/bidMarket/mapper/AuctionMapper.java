@@ -2,8 +2,8 @@ package com.example.bidMarket.mapper;
 
 import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.ProductStatus;
-import com.example.bidMarket.dto.AuctionCreateDto;
-import com.example.bidMarket.dto.ProductImageDto;
+import com.example.bidMarket.dto.Request.AuctionCreateRequest;
+import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Product;
 import com.example.bidMarket.model.ProductImage;
@@ -22,42 +22,58 @@ public class AuctionMapper {
     private final UserRepository userRepository;
     private final ProductMapper productMapper;
     // Mapping AuctionCreateDto to Auction entity
-    public Auction auctionCreateToAuction(AuctionCreateDto auctionCreateDto, Product product) {
+    public Auction auctionCreateToAuction(AuctionCreateRequest auctionCreateRequest, Product product) {
         Auction auction = new Auction();
-        auction.setTitle(auctionCreateDto.getTitle());
-        auction.setStartTime(auctionCreateDto.getStartTime());
-        auction.setEndTime(auctionCreateDto.getEndTime());
-        auction.setCurrentPrice(auctionCreateDto.getStartPrice());
-        auction.setStartingPrice(auctionCreateDto.getStartPrice());
+        auction.setTitle(auctionCreateRequest.getTitle());
+        auction.setStartTime(auctionCreateRequest.getStartTime());
+        auction.setEndTime(auctionCreateRequest.getEndTime());
+        auction.setCurrentPrice(auctionCreateRequest.getStartingPrice());
+        auction.setStartingPrice(auctionCreateRequest.getStartingPrice());
         auction.setStatus(AuctionStatus.PENDING);
-        auction.setMinimumBidIncrement(auctionCreateDto.getMinimumBidIncrement());
+        auction.setMinimumBidIncrement(auctionCreateRequest.getMinimumBidIncrement());
         auction.setExtensionCount(0);
         auction.setProduct(product);
         return auction;
     }
 
-    public User auctionCreateToUser(AuctionCreateDto auctionCreateDto) {
-        UUID sellerId = auctionCreateDto.getProductDto().getSeller();
+    public User auctionCreateToUser(AuctionCreateRequest auctionCreateRequest) {
+        UUID sellerId = auctionCreateRequest.getProductDto().getSeller();
         return userRepository.findById(sellerId)
                 .orElseThrow(() -> new RuntimeException("Seller not found with id: " + sellerId));
     }
 
-    public Product auctionCreateToProduct(AuctionCreateDto auctionCreateDto) {
+    public Product auctionCreateToProduct(AuctionCreateRequest auctionCreateRequest) {
         Product product = new Product();
-        product.setName(auctionCreateDto.getProductDto().getName());
-        product.setDescription(auctionCreateDto.getProductDto().getDescription());
-        product.setSeller(auctionCreateToUser(auctionCreateDto));
+        product.setName(auctionCreateRequest.getProductDto().getName());
+        product.setDescription(auctionCreateRequest.getProductDto().getDescription());
+        product.setSeller(auctionCreateToUser(auctionCreateRequest));
         product.setStatus(ProductStatus.INACTIVE);
-        product.setStockQuantity(auctionCreateDto.getProductDto().getStockQuantity());
+        product.setStockQuantity(auctionCreateRequest.getProductDto().getStockQuantity());
 
-        if (auctionCreateDto.getProductDto().getProductImages() != null && !auctionCreateDto.getProductDto().getProductImages().isEmpty()) {
-            List<ProductImage> productImages = auctionCreateDto.getProductDto().getProductImages().stream()
+        if (auctionCreateRequest.getProductDto().getProductImages() != null && !auctionCreateRequest.getProductDto().getProductImages().isEmpty()) {
+            List<ProductImage> productImages = auctionCreateRequest.getProductDto().getProductImages().stream()
                     .map(image -> productMapper.productImageDtoToProductImage(image))
                     .collect(Collectors.toList());
             product.setProductImages(productImages);
         }
 
         return product;
+    }
+
+    public AuctionDto auctionToAuctionDto(Auction auction) {
+        return AuctionDto.builder()
+                .id(auction.getId())
+                .title(auction.getTitle())
+                .productId(auction.getProduct().getId())
+                .sellerId(auction.getProduct().getSeller().getId())
+                .startTime(auction.getStartTime())
+                .endTime(auction.getEndTime())
+                .currentPrice(auction.getCurrentPrice())
+                .startingPrice(auction.getStartingPrice())
+                .status(auction.getStatus())
+                .minimumBidIncrement(auction.getMinimumBidIncrement())
+                .extensionCount(auction.getExtensionCount())
+                .build();
     }
 
 
