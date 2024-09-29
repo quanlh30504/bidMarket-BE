@@ -32,8 +32,9 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URL = {
             "/api/users/signup",
             "/api/users/signin",
-            "/api/auctions/**"
-
+            "/api/auctions/**",
+            "/submitOrder",
+            "/vnpay-payment-return"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;

@@ -31,4 +31,13 @@ log:
     org.springframework.web: DEBUG
     com.example.bidMarket: DEBUG
 
-
+payment:
+  vnPay:
+    url: ${PAY_URL}
+    tmnCode: ${TMN_CODE}
+    secretKey: ${SECRET_KEY}
+    returnUrl: ${RETURN_URL}
+    vnpApiUrl: ${VNP_API_URL}
+    version: ${VNP_VERSION}
+    command: ${VNP_COMMAND}
+    orderType: ${ORDER_TYPE}
