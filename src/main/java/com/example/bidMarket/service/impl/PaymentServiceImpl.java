@@ -11,6 +11,7 @@ import com.example.bidMarket.repository.PaymentRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.AuctionService;
 import com.example.bidMarket.service.PaymentService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.expression.ExpressionException;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
 
     @Override
+    @Transactional
     public PaymentDto createPayment(PaymentDto paymentDto) throws Exception {
         User user = userRepository.findById(paymentDto.getUserId())
                 .orElseThrow(() -> new Exception("Not existed user id " + paymentDto.getUserId()));
