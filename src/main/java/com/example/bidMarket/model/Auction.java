@@ -42,8 +42,14 @@ public class Auction {
     @Column(name = "minimum_bid_increment", precision = 10, scale = 2, nullable = false)
     private BigDecimal minimumBidIncrement;
 
+    @Column(name = "last_bid_time", nullable = true)
+    private LocalDateTime lastBidTime;
+
     @Column(name = "extension_count", nullable = false)
-    private int extensionCount = 0;
+    private int extensionCount  = 0;
+
+    @Version
+    private int version;
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private LocalDateTime createdAt;

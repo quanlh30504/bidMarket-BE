@@ -34,7 +34,8 @@ public class SecurityConfig {
             "/api/users/signin",
             "/api/auctions/**",
             "/submitOrder",
-            "/vnpay-payment-return"
+            "/vnpay-payment-return",
+            "/api/v1/bids/**"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -63,7 +64,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(WHITE_LIST_URL).permitAll()
-                        .requestMatchers("/api/auctions/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
