@@ -1,5 +1,5 @@
 # bidMarket-BE
-# Cấu hình môi trường
+## Config environment
 
 Để cấu hình môi trường cho ứng dụng, bạn cần tạo một file `.env` trong thư mục `resources` với nội dung như sau:
 
@@ -21,4 +21,27 @@ VNP_API_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
 VNP_VERSION=2.1.0
 VNP_COMMAND=pay
 ORDER_TYPE=order-type
+```
+Config aws S3
+```plaintext
+AWS_S3_REGION=ap-southeast-1
+AWS_S3_BUCKET=bidmarket-image-bucket
+AWS_SECRET_ACCESS_KEY=
+AWS_ACCESS_KEY_ID=
+DEFAULT_AVATAR_URL=
+DEFAULT_PRODUCT_URL=
+```
+
+## Install and set up kafka in local computer
+- Tải kafka và giải nén → đổi tên file giải nén thành kafka
+- Khời chạy zookepper trên win
+
+```plaintext
+C:\kafka>bin\windows\zookeeper-server-start.bat config\zookeeper.properties
+```
+
+- Khời chạy kafka server trên win (chú ý mở cmd khác và để nguyên cmd đang chạy zookepper)
+
+```plaintext
+C:\kafka>bin\windows\kafka-server-start.bat config\server.properties
 ```
