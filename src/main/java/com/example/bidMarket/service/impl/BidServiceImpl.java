@@ -59,7 +59,9 @@ public class BidServiceImpl implements BidService {
         Auction auction = auctionOpt.get();
 
         // Kiểm tra thời gian đặt lệnh
-        if (bidRequest.getBidTime().isBefore(auction.getStartTime()) || bidRequest.getBidTime().isAfter(auction.getEndTime())) {
+        if (bidRequest.getBidTime().isBefore(auction.getStartTime()) || bidRequest.getBidTime().isAfter(auction.getEndTime())
+            || bidRequest.getBidTime().isBefore(auction.getLastBidTime())
+        ) {
             throw new IllegalArgumentException("Bid time is invalid");
         }
 

@@ -62,6 +62,8 @@ aws:
   s3:
     region: ${AWS_S3_REGION}
     bucket: ${AWS_S3_BUCKET}
+  default_avatar_url: ${DEFAULT_AVATAR_URL}
+  default_product_url: ${DEFAULT_PRODUCT_URL}
 
 payment:
   vnPay:

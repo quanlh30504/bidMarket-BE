@@ -1,4 +1,4 @@
-package com.example.bidMarket.config;
+package com.example.bidMarket.AWS;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

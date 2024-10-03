@@ -27,6 +27,7 @@ public class AuctionMapper {
         auction.setTitle(auctionCreateRequest.getTitle());
         auction.setStartTime(auctionCreateRequest.getStartTime());
         auction.setEndTime(auctionCreateRequest.getEndTime());
+        auction.setLastBidTime(auctionCreateRequest.getStartTime());
         auction.setCurrentPrice(auctionCreateRequest.getStartingPrice());
         auction.setStartingPrice(auctionCreateRequest.getStartingPrice());
         auction.setStatus(AuctionStatus.PENDING);
@@ -55,6 +56,7 @@ public class AuctionMapper {
                 .startTime(auction.getStartTime())
                 .endTime(auction.getEndTime())
                 .currentPrice(auction.getCurrentPrice())
+                .lastBidTime(auction.getLastBidTime())
                 .startingPrice(auction.getStartingPrice())
                 .status(auction.getStatus())
                 .minimumBidIncrement(auction.getMinimumBidIncrement())

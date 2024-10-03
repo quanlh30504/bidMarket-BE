@@ -6,6 +6,8 @@ import com.example.bidMarket.dto.Request.RefreshTokenRequest;
 import com.example.bidMarket.dto.Request.RegisterRequest;
 import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
 import com.example.bidMarket.dto.Response.RegisterResponse;
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.RegisterMapper;
 import com.example.bidMarket.mapper.UserMapper;
 import com.example.bidMarket.model.IdCard;
@@ -64,20 +66,13 @@ public class UserServiceImpl implements UserService {
 
         // Create and save profile
         Profile profile = registerMapper.requestToProfile(user, registerRequest);
-
         profile = profileRepository.save(profile);
         user.setProfile(profile);
         user = userRepository.save(user);
         
         // handle profile image upload
-        if (registerRequest.getProfileImageUrl() != null && !registerRequest.getProfileImageUrl().isEmpty()) {
-            String profileImageUrl = imageService.uploadUserAvatar(user.getId(), registerRequest.getProfileImageUrl());
-            profile.setProfileImageUrl(profileImageUrl);
-        }
+        imageService.uploadUserAvatar(user.getId(), registerRequest.getProfileImageUrl());
 
-        profile = profileRepository.save(profile);
-
-        user.setProfile(profile);
         if (user.getRole() == Role.SELLER) {
             IdCard idCard = registerMapper.requestToIdCard(user, registerRequest);
             user.setIdCard(idCard);
@@ -90,7 +85,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         return userMapper.userToUserDto(user);
     }
@@ -106,7 +101,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto updateUser(UUID id, UserUpdateDto userUpdateDto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         userMapper.updateUserFromDto(userUpdateDto, user);
         User updatedUser = userRepository.save(user);
