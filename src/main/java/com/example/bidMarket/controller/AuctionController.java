@@ -23,7 +23,7 @@ public class AuctionController {
     @PutMapping("/{auctionId}/status")
     public ResponseEntity<AuctionDto> changeAuctionStatus(
             @PathVariable UUID auctionId,
-            @RequestParam AuctionStatus newStatus) throws Exception {
+            @RequestParam("newStatus") AuctionStatus newStatus) throws Exception {
         return ResponseEntity.ok(auctionService.changeAuctionStatus(auctionId, newStatus));
     }
 }

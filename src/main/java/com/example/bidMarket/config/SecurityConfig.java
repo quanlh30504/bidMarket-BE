@@ -32,8 +32,10 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URL = {
             "/api/users/signup",
             "/api/users/signin",
-            "/api/auctions/**"
-
+            "/api/auctions/**",
+            "/submitOrder",
+            "/vnpay-payment-return",
+            "/api/v1/bids/**"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -62,7 +64,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(WHITE_LIST_URL).permitAll()
-                        .requestMatchers("/api/auctions/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
