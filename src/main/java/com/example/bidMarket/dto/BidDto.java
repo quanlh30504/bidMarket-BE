@@ -14,5 +14,4 @@ public class BidDto {
     private BigDecimal bidAmount;
     private BidStatus status;
     private LocalDateTime bidTime;
-    private LocalDateTime updatedAt;
 }

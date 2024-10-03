@@ -3,6 +3,9 @@ package com.example.bidMarket.model;
 import com.example.bidMarket.Enum.AuctionStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,7 +45,7 @@ public class Auction {
     @Column(name = "minimum_bid_increment", precision = 10, scale = 2, nullable = false)
     private BigDecimal minimumBidIncrement;
 
-    @Column(name = "last_bid_time", nullable = true)
+    @Column(name = "last_bid_time", nullable = false)
     private LocalDateTime lastBidTime;
 
     @Column(name = "extension_count", nullable = false)
@@ -51,9 +54,11 @@ public class Auction {
     @Version
     private int version;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
 

@@ -17,6 +17,7 @@ public class AuctionDto {
     private UUID sellerId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime lastBidTime;
     private BigDecimal currentPrice;
     private BigDecimal startingPrice;
     private AuctionStatus status;
