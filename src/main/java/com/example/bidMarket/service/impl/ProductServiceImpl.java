@@ -2,8 +2,10 @@ package com.example.bidMarket.service.impl;
 
 import com.example.bidMarket.Enum.ProductStatus;
 import com.example.bidMarket.dto.ProductDto;
+import com.example.bidMarket.dto.ProductImageDto;
 import com.example.bidMarket.mapper.ProductMapper;
 import com.example.bidMarket.model.Product;
+import com.example.bidMarket.model.ProductImage;
 import com.example.bidMarket.repository.ProductRepository;
 import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -13,6 +15,7 @@ import org.springframework.expression.ExpressionException;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,7 +47,18 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductDto createProduct(ProductDto productDto) throws Exception {
         Product product = productMapper.productDtoToProduct(productDto);
-        productRepository.save(product);
+        List<ProductImageDto> productImageDtoList = productDto.getProductImages();
+        // Lưu hình ảnh sản phẩm
+        if (productImageDtoList != null && !productImageDtoList.isEmpty()) {
+            List<ProductImage> productImageList= new ArrayList<>();
+            for (ProductImageDto imageDto : productImageDtoList) {
+                ProductImage productImage = productMapper.productImageDtoToProductImage(imageDto);
+                productImage.setProduct(product);
+                productImageList.add(productImage);
+            }
+            product.setProductImages(productImageList);
+        }
+        product = productRepository.save(product);
         return productMapper.productToProductDto(product);
     }
 

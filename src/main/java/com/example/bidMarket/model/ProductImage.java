@@ -25,7 +25,11 @@ public class ProductImage {
     @Column(name = "is_primary")
     private boolean isPrimary;
 
-    @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

@@ -40,29 +40,22 @@ public class ProductMapper {
         product.setName(productDto.getName());
         product.setDescription(productDto.getDescription());
         product.setSeller(seller);
-        product.setStatus(productDto.getProductStatus());
+        product.setStatus(productDto.getProductStatus() == null ? ProductStatus.INACTIVE : productDto.getProductStatus());
         product.setStockQuantity(productDto.getStockQuantity());
 
-        List<ProductImageDto> productImageDtoList = productDto.getProductImages();
-        if (productImageDtoList!= null && !productImageDtoList.isEmpty()) {
-            List<ProductImage> productImages = productImageDtoList.stream()
-                    .map(this::productImageDtoToProductImage)
-                    .collect(Collectors.toList());
-            product.setProductImages(productImages);
-        }
         return product;
     }
 
     public ProductDto productToProductDto (Product product) {
         ProductDto productDto = new ProductDto();
-        productDto.setName(productDto.getName());
-        productDto.setDescription(productDto.getDescription());
+        productDto.setName(product.getName());
+        productDto.setDescription(product.getDescription());
         productDto.setProductStatus(product.getStatus());
         productDto.setSellerId(product.getSeller().getId());
-        productDto.setStockQuantity(productDto.getStockQuantity());
+        productDto.setStockQuantity(product.getStockQuantity());
 
         List<ProductImage> productImages = product.getProductImages();
-        if (productImages == null && !productImages.isEmpty()) {
+        if (productImages != null && !productImages.isEmpty()) {
             List<ProductImageDto> productImageDtoList = productImages.stream()
                     .map(this::productImageToProductImageDto)
                     .collect(Collectors.toList());
