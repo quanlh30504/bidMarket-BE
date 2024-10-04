@@ -3,7 +3,6 @@ package com.example.bidMarket.model;
 import com.example.bidMarket.Enum.AuctionStatus;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -61,6 +60,5 @@ public class Auction {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
-
 
 }

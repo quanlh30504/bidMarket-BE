@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class ApiResponse <T> {
     private int code = 1000; // good
     private String message;
-    private T result;
+    private T data;
 
     public int getCode() {
         return code;
@@ -26,10 +26,10 @@ public class ApiResponse <T> {
     }
 
     public T getResult() {
-        return result;
+        return data;
     }
 
     public void setResult(T result) {
-        this.result = result;
+        this.data = data;
     }
 }

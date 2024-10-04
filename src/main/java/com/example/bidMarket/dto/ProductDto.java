@@ -1,5 +1,6 @@
 package com.example.bidMarket.dto;
 
+import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.Enum.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,4 +21,5 @@ public class ProductDto {
     private UUID sellerId;
     private int stockQuantity;
     private List<ProductImageDto> productImages;
+    private List<CategoryType> categories;
 }

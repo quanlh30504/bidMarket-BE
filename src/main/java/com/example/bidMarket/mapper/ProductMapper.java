@@ -1,11 +1,14 @@
 package com.example.bidMarket.mapper;
 
-import com.example.bidMarket.Enum.ProductStatus;
+
+import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.dto.ProductDto;
 import com.example.bidMarket.dto.ProductImageDto;
+import com.example.bidMarket.model.Category;
 import com.example.bidMarket.model.Product;
 import com.example.bidMarket.model.ProductImage;
 import com.example.bidMarket.model.User;
+import com.example.bidMarket.repository.CategoryRepository;
 import com.example.bidMarket.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,6 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductMapper {
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
     public ProductImage productImageDtoToProductImage(ProductImageDto productImageDto) {
         ProductImage productImage = new ProductImage();
@@ -50,6 +54,15 @@ public class ProductMapper {
                     .collect(Collectors.toList());
             product.setProductImages(productImages);
         }
+        List<CategoryType> categoryTypeList = productDto.getCategories();
+        if (categoryTypeList != null && !categoryTypeList.isEmpty()) {
+            List<Category> categories = categoryTypeList.stream()
+                    .map(categoryType -> categoryRepository.findByCategoryType(categoryType)
+                            .orElseThrow(() -> new RuntimeException("Category not found: " + categoryType))
+                    )
+                    .toList();
+            product.setCategories(categories);
+        }
         return product;
     }
 
@@ -67,6 +80,13 @@ public class ProductMapper {
                     .map(this::productImageToProductImageDto)
                     .collect(Collectors.toList());
             productDto.setProductImages(productImageDtoList);
+        }
+        List<Category> categories = product.getCategories();
+        if (categories != null && !categories.isEmpty()) {
+            List<CategoryType> categoryTypeList = categories.stream()
+                    .map(Category::getCategoryType)
+                    .toList();
+            productDto.setCategories(categoryTypeList);
         }
         return productDto;
     }

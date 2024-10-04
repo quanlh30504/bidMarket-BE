@@ -13,6 +13,7 @@ public class AuctionCreateRequest {
     private ProductDto productDto;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private AuctionStatus status;
     private BigDecimal currentPrice;
     private BigDecimal startingPrice;
     private AuctionStatus auctionStatus;

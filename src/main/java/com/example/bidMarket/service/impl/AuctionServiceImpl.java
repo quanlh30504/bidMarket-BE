@@ -37,24 +37,14 @@ public class AuctionServiceImpl implements AuctionService {
     @Transactional
     public AuctionDto createAuction(AuctionCreateRequest auctionCreateRequest) throws Exception {
         // Tạo Product entity từ DTO
-        Product product = auctionMapper.auctionCreateToProduct(auctionCreateRequest);
-        List<ProductImageDto> productImageDtoList = auctionCreateRequest.getProductDto().getProductImages();
-        // Lưu hình ảnh sản phẩm
-        if (productImageDtoList != null && !productImageDtoList.isEmpty()) {
-            List<ProductImage> productImageList= new ArrayList<>();
-            for (ProductImageDto imageDto : productImageDtoList) {
-                ProductImage productImage = productMapper.productImageDtoToProductImage(imageDto);
-                productImage.setProduct(product);
-                productImageList.add(productImage);
-            }
-            product.setProductImages(productImageList);
-        }
-        product = productRepository.save(product);
+        Product product = productRepository.save(auctionMapper.auctionCreateToProduct(auctionCreateRequest));
 
         // Tạo phiên đấu giá từ DTO và product đã được lưu
         Auction auction = auctionMapper.auctionCreateToAuction(auctionCreateRequest, product);
-        // Lưu phiên đấu giá vào database
-        return auctionMapper.auctionToAuctionDto(auctionRepository.save(auction));
+        auction = auctionRepository.save(auction);
+
+        AuctionDto auctionDto = auctionMapper.auctionToAuctionDto(auction);
+        return auctionDto;
     }
 
     @Override
@@ -67,6 +57,8 @@ public class AuctionServiceImpl implements AuctionService {
         auction.setStatus(status);
         return auctionMapper.auctionToAuctionDto(auctionRepository.save(auction));
     }
+
+
 
 
 }
