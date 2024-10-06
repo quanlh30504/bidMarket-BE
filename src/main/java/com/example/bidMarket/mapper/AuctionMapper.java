@@ -38,13 +38,13 @@ public class AuctionMapper {
     }
 
     public User auctionCreateToUser(AuctionCreateRequest auctionCreateRequest) {
-        UUID sellerId = auctionCreateRequest.getProductDto().getSellerId();
+        UUID sellerId = auctionCreateRequest.getProductCreateRequest().getSellerId();
         return userRepository.findById(sellerId)
                 .orElseThrow(() -> new RuntimeException("Seller not found with id: " + sellerId));
     }
 
     public Product auctionCreateToProduct(AuctionCreateRequest auctionCreateRequest) throws Exception {
-        return productMapper.productDtoToProduct(auctionCreateRequest.getProductDto());
+        return productMapper.productCreateToProduct(auctionCreateRequest.getProductCreateRequest());
     }
 
     public AuctionDto auctionToAuctionDto(Auction auction) {

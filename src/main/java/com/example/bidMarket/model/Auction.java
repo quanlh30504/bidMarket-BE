@@ -3,6 +3,7 @@ package com.example.bidMarket.model;
 import com.example.bidMarket.Enum.AuctionStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 @Data
 @Entity
+@DynamicUpdate
 @Table(name = "auctions")
 public class Auction {
     @Id

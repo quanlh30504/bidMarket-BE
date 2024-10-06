@@ -38,6 +38,13 @@ public enum ErrorCode {
     AUCTION_BID_REJECTED(5004, "Bid rejected due to auction rules"),
     AUCTION_INVALID_STATUS(5005, "Auction status is invalid"),
     AUCTION_UNAUTHORIZED_ACCESS(5006, "Unauthorized access to the auction"),
+    AUCTION_UPDATE_FAILED(5006, "Failed to update auction"),
+    AUCTION_DELETE_FAILED(5007, "Failed to delete auction"),
+    AUCTION_OPEN_FAILED(5008, "Failed to open auction"),
+    AUCTION_CLOSE_FAILED(5009, "Failed to close auction"),
+    AUCTION_COMPLETE_FAILED(5010, "Failed to complete auction"),
+    AUCTION_CANCEL_FAILED(5011, "Failed to cancel auction"),
+    AUCTION_REOPEN_FAILED(5012, "Failed to reopen auction"),
 
     // Bid-related errors (6xxx)
     BID_NOT_FOUND(6001, "Bid not found"),
@@ -80,6 +87,8 @@ public enum ErrorCode {
     TRANSACTION_ERROR(11003, "Transaction error"),
     PAYMENT_METHOD_INVALID(11004, "Invalid payment method"),
 
+    // Category
+    CATEGORY_NOT_EXISTED(12001,"Category not existed"),
     // Uncategorized errors (9999)
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error");
 

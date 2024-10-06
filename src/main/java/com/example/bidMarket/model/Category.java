@@ -1,10 +1,12 @@
 package com.example.bidMarket.model;
 
 import com.example.bidMarket.Enum.CategoryType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @Data

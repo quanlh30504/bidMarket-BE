@@ -2,6 +2,9 @@ package com.example.bidMarket.controller;
 
 import com.example.bidMarket.Enum.ProductStatus;
 import com.example.bidMarket.dto.ProductDto;
+import com.example.bidMarket.dto.Request.ProductCreateRequest;
+import com.example.bidMarket.dto.Request.ProductUpdateRequest;
+import com.example.bidMarket.mapper.ProductMapper;
 import com.example.bidMarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -17,6 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final ProductMapper productMapper;
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDto> getProduct(@PathVariable UUID id) throws Exception {
@@ -29,15 +33,15 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) throws Exception {
-        return ResponseEntity.ok(productService.createProduct(productDto));
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductCreateRequest request) throws Exception {
+        return ResponseEntity.ok(productMapper.productToProductDto(productService.createProduct(request)));
 
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct (@PathVariable UUID id, @RequestBody ProductDto productDto)
+    public ResponseEntity<ProductDto> updateProduct (@PathVariable UUID id, @RequestBody ProductUpdateRequest request)
             throws Exception {
-        return ResponseEntity.ok(productService.updateProduct(id,productDto));
+        return ResponseEntity.ok(productService.updateProduct(id,request));
     }
 
     @PutMapping("/{id}/status")

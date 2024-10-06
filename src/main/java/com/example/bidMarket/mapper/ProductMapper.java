@@ -2,8 +2,12 @@ package com.example.bidMarket.mapper;
 
 
 import com.example.bidMarket.Enum.CategoryType;
+import com.example.bidMarket.Enum.ProductStatus;
 import com.example.bidMarket.dto.ProductDto;
 import com.example.bidMarket.dto.ProductImageDto;
+import com.example.bidMarket.dto.Request.ProductCreateRequest;
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.model.Category;
 import com.example.bidMarket.model.Product;
 import com.example.bidMarket.model.ProductImage;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -37,55 +42,71 @@ public class ProductMapper {
                 .build();
     }
 
-    public Product productDtoToProduct(ProductDto productDto) throws Exception {
+    public Product productDtoToProduct(ProductDto productDto) {
         User seller = userRepository.findById(productDto.getSellerId())
-                .orElseThrow(() -> new Exception("Don't exist user id: " + productDto.getSellerId()));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         Product product = new Product();
         product.setName(productDto.getName());
         product.setDescription(productDto.getDescription());
         product.setSeller(seller);
-        product.setStatus(productDto.getProductStatus());
+        product.setStatus(productDto.getProductStatus() == null ? ProductStatus.INACTIVE : productDto.getProductStatus());
         product.setStockQuantity(productDto.getStockQuantity());
 
-        List<ProductImageDto> productImageDtoList = productDto.getProductImages();
-        if (productImageDtoList!= null && !productImageDtoList.isEmpty()) {
-            List<ProductImage> productImages = productImageDtoList.stream()
-                    .map(this::productImageDtoToProductImage)
-                    .collect(Collectors.toList());
-            product.setProductImages(productImages);
-        }
-        List<CategoryType> categoryTypeList = productDto.getCategories();
+        Set<CategoryType> categoryTypeList = productDto.getCategories();
         if (categoryTypeList != null && !categoryTypeList.isEmpty()) {
-            List<Category> categories = categoryTypeList.stream()
+            Set<Category> categories = categoryTypeList.stream()
                     .map(categoryType -> categoryRepository.findByCategoryType(categoryType)
-                            .orElseThrow(() -> new RuntimeException("Category not found: " + categoryType))
+                            .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED))
                     )
-                    .toList();
+                    .collect(Collectors.toSet());
+            product.setCategories(categories);
+        }
+        return product;
+    }
+    public Product productCreateToProduct(ProductCreateRequest request) {
+        User seller = userRepository.findById(request.getSellerId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setSeller(seller);
+        product.setStatus(ProductStatus.INACTIVE);
+        product.setStockQuantity(request.getStockQuantity());
+
+        Set<CategoryType> categoryTypeList = request.getCategories();
+        if (categoryTypeList != null && !categoryTypeList.isEmpty()) {
+            Set<Category> categories = categoryTypeList.stream()
+                    .map(categoryType -> categoryRepository.findByCategoryType(categoryType)
+                            .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED))
+                    )
+                    .collect(Collectors.toSet());
             product.setCategories(categories);
         }
         return product;
     }
 
+
     public ProductDto productToProductDto (Product product) {
         ProductDto productDto = new ProductDto();
-        productDto.setName(productDto.getName());
-        productDto.setDescription(productDto.getDescription());
+        productDto.setId(product.getId());
+        productDto.setName(product.getName());
+        productDto.setDescription(product.getDescription());
         productDto.setProductStatus(product.getStatus());
         productDto.setSellerId(product.getSeller().getId());
-        productDto.setStockQuantity(productDto.getStockQuantity());
+        productDto.setStockQuantity(product.getStockQuantity());
 
         List<ProductImage> productImages = product.getProductImages();
-        if (productImages == null && !productImages.isEmpty()) {
+        if (productImages != null && !productImages.isEmpty()) {
             List<ProductImageDto> productImageDtoList = productImages.stream()
                     .map(this::productImageToProductImageDto)
                     .collect(Collectors.toList());
             productDto.setProductImages(productImageDtoList);
         }
-        List<Category> categories = product.getCategories();
+        Set<Category> categories = product.getCategories();
         if (categories != null && !categories.isEmpty()) {
-            List<CategoryType> categoryTypeList = categories.stream()
+            Set<CategoryType> categoryTypeList = categories.stream()
                     .map(Category::getCategoryType)
-                    .toList();
+                    .collect(Collectors.toSet());
             productDto.setCategories(categoryTypeList);
         }
         return productDto;
