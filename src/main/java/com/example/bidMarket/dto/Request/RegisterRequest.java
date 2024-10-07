@@ -17,8 +17,8 @@ public class RegisterRequest {
 
     // Chỉ áp dụng nếu role là SELLER
     private String idCard;
-    private String frontImageURL;
-    private String backImageURL;
+    private MultipartFile frontImage;
+    private MultipartFile backImage;
     private LocalDate issuedDate;
     private LocalDate expirationDate;
 }
