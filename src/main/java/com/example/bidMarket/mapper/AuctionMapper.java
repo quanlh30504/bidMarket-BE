@@ -4,6 +4,7 @@ import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.ProductStatus;
 import com.example.bidMarket.dto.Request.AuctionCreateRequest;
 import com.example.bidMarket.dto.AuctionDto;
+import com.example.bidMarket.dto.Response.AuctionSearchResponse;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Product;
 import com.example.bidMarket.model.ProductImage;
@@ -38,13 +39,13 @@ public class AuctionMapper {
     }
 
     public User auctionCreateToUser(AuctionCreateRequest auctionCreateRequest) {
-        UUID sellerId = auctionCreateRequest.getProductDto().getSellerId();
+        UUID sellerId = auctionCreateRequest.getProductCreateRequest().getSellerId();
         return userRepository.findById(sellerId)
                 .orElseThrow(() -> new RuntimeException("Seller not found with id: " + sellerId));
     }
 
     public Product auctionCreateToProduct(AuctionCreateRequest auctionCreateRequest) throws Exception {
-        return productMapper.productDtoToProduct(auctionCreateRequest.getProductDto());
+        return productMapper.productCreateToProduct(auctionCreateRequest.getProductCreateRequest());
     }
 
     public AuctionDto auctionToAuctionDto(Auction auction) {
@@ -63,6 +64,20 @@ public class AuctionMapper {
                 .extensionCount(auction.getExtensionCount())
                 .build();
     }
+    public AuctionSearchResponse auctionToAuctionSearchResponse(Auction auction) {
+        AuctionSearchResponse response = AuctionSearchResponse.builder()
+                .title(auction.getTitle())
+                .productDto(productMapper.productToProductDto(auction.getProduct()))
+                .startTime(auction.getStartTime())
+                .endTime(auction.getEndTime())
+                .currentPrice(auction.getCurrentPrice())
+                .startingPrice(auction.getStartingPrice())
+                .minimumBidIncrement(auction.getMinimumBidIncrement())
+                .extensionCount(auction.getExtensionCount())
+                .build();
+        return response;
+    }
+
 
 
 

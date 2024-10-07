@@ -35,6 +35,7 @@ public class UserController {
             @RequestPart("registerRequest") @Valid RegisterRequest registerRequest,
             @RequestPart(value = "profileImageUrl", required = false) MultipartFile profileImageUrl) throws Exception {
 
+        logger.info("Start sign up");
         registerRequest.setProfileImageUrl(profileImageUrl);
 
         RegisterResponse registerResponse = userService.createUser(registerRequest);

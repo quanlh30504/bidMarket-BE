@@ -1,16 +1,18 @@
-package com.example.bidMarket.dto.Request;
+package com.example.bidMarket.dto.Response;
 
-import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.dto.ProductDto;
+import com.example.bidMarket.dto.Request.ProductCreateRequest;
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class AuctionCreateRequest {
+@Builder
+public class AuctionSearchResponse {
     private String title;
-    private ProductCreateRequest productCreateRequest;
+    private ProductDto productDto;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private BigDecimal currentPrice;
