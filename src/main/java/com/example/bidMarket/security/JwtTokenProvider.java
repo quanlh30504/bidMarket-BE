@@ -87,8 +87,9 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(token);
-            return isTokenExpired(token);
+            var check = Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(token);
+//            return isTokenExpired(token);
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }

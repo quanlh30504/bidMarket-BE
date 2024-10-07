@@ -1,4 +1,4 @@
-package com.example.bidMarket.model;
+package com.example.bidMarket.Enum;
 
 public enum AddressType {
     HOME, WORK, OTHERS

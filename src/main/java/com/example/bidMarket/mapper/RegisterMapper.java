@@ -4,7 +4,7 @@ import com.example.bidMarket.dto.Request.RegisterRequest;
 import com.example.bidMarket.dto.Response.RegisterResponse;
 import com.example.bidMarket.model.IdCard;
 import com.example.bidMarket.model.Profile;
-import com.example.bidMarket.model.Role;
+import com.example.bidMarket.Enum.Role;
 import com.example.bidMarket.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,7 +27,7 @@ public class RegisterMapper {
                 .user(user)  // Gán user đã tạo trước đó
                 .fullName(request.getFullName())
                 .phoneNumber(request.getPhoneNumber())
-                .profileImageUrl(request.getProfileImageUrl())
+//                .profileImageUrl(request.getProfileImageUrl())
                 .build();
     }
 

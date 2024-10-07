@@ -1,8 +1,6 @@
 package com.example.bidMarket.dto.Response;
 
-import com.example.bidMarket.dto.IdCardDto;
-import com.example.bidMarket.dto.ProfileDto;
-import com.example.bidMarket.model.Role;
+import com.example.bidMarket.Enum.Role;
 import lombok.Builder;
 import lombok.Data;
 

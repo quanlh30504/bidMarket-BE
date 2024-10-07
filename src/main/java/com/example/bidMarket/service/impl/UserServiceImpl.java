@@ -6,16 +6,19 @@ import com.example.bidMarket.dto.Request.RefreshTokenRequest;
 import com.example.bidMarket.dto.Request.RegisterRequest;
 import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
 import com.example.bidMarket.dto.Response.RegisterResponse;
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.RegisterMapper;
 import com.example.bidMarket.mapper.UserMapper;
 import com.example.bidMarket.model.IdCard;
 import com.example.bidMarket.model.Profile;
-import com.example.bidMarket.model.Role;
+import com.example.bidMarket.Enum.Role;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.IdCardRepository;
 import com.example.bidMarket.repository.ProfileRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.security.JwtTokenProvider;
+import com.example.bidMarket.service.ImageService;
 import com.example.bidMarket.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -46,7 +49,7 @@ public class UserServiceImpl implements UserService {
     private final RegisterMapper registerMapper;
     private final ProfileRepository profileRepository;
     private final IdCardRepository idCardRepository;
-
+    private final ImageService imageService;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 
@@ -57,22 +60,32 @@ public class UserServiceImpl implements UserService {
             throw new Exception("Email existed");
         }
 
+        // Create user
         User user = registerMapper.requestToUser(registerRequest);
+        user = userRepository.save(user);
 
+        // Create and save profile
         Profile profile = registerMapper.requestToProfile(user, registerRequest);
+        profile = profileRepository.save(profile);
         user.setProfile(profile);
+        user = userRepository.save(user);
+        
+        // handle profile image upload
+        imageService.uploadUserAvatar(user.getId(), registerRequest.getProfileImageUrl());
 
         if (user.getRole() == Role.SELLER) {
             IdCard idCard = registerMapper.requestToIdCard(user, registerRequest);
             user.setIdCard(idCard);
         }
-        return registerMapper.toRegisterResponse(userRepository.save(user));
+
+        user = userRepository.save(user);
+        return registerMapper.toRegisterResponse(user);
     }
 
     @Override
     public UserDto getUserById(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         return userMapper.userToUserDto(user);
     }
@@ -88,7 +101,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto updateUser(UUID id, UserUpdateDto userUpdateDto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         userMapper.updateUserFromDto(userUpdateDto, user);
         User updatedUser = userRepository.save(user);

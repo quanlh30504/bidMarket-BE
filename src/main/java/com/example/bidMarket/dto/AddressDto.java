@@ -1,6 +1,6 @@
 package com.example.bidMarket.dto;
 
-import com.example.bidMarket.model.AddressType;
+import com.example.bidMarket.Enum.AddressType;
 import lombok.Data;
 
 import java.util.UUID;

@@ -1,7 +1,6 @@
 package com.example.bidMarket.dto;
 
-import com.example.bidMarket.model.IdCard;
-import com.example.bidMarket.model.Role;
+import com.example.bidMarket.Enum.Role;
 import lombok.Data;
 
 import java.util.UUID;
