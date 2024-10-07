@@ -11,7 +11,6 @@ import java.util.UUID;
 
 @Data
 public class ProductCreateRequest {
-    private UUID id;
     private String name;
     private String description;
     private UUID sellerId;

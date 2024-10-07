@@ -1,13 +1,18 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.Enum.ProductStatus;
+import com.example.bidMarket.SearchService.PaginatedResponse;
 import com.example.bidMarket.dto.ProductDto;
 import com.example.bidMarket.dto.Request.ProductCreateRequest;
 import com.example.bidMarket.dto.Request.ProductUpdateRequest;
 import com.example.bidMarket.mapper.ProductMapper;
+import com.example.bidMarket.model.Product;
 import com.example.bidMarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +35,31 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<ProductDto>> getAllProducts(){
         return ResponseEntity.ok(productService.getAllProduct());
+    }
+
+    @GetMapping("/search")
+    public PaginatedResponse<ProductDto> searchProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) CategoryType categoryType,
+            @RequestParam(required = false) ProductStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "ASC") Sort.Direction sortDirection) {
+
+        Page<Product> productPage = productService.searchProducts(name, categoryType, status, page, size, sortField, sortDirection);
+        List<ProductDto> content = productPage.getContent().stream()
+                .map(productMapper::productToProductDto)
+                .toList();
+        return new PaginatedResponse<>(
+                productPage.getNumber(),
+                productPage.getSize(),
+                productPage.getTotalElements(),
+                productPage.getTotalPages(),
+                productPage.isLast(),
+                productPage.isFirst(),
+                content
+        );
     }
 
     @PostMapping

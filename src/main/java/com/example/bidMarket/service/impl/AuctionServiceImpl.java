@@ -1,9 +1,10 @@
 package com.example.bidMarket.service.impl;
 
 import com.example.bidMarket.Enum.AuctionStatus;
+import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.Enum.ProductStatus;
+import com.example.bidMarket.SearchService.AuctionSpecification;
 import com.example.bidMarket.dto.Request.AuctionCreateRequest;
-import com.example.bidMarket.dto.ProductImageDto;
 import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.dto.Request.AuctionUpdateRequest;
 import com.example.bidMarket.exception.AppException;
@@ -12,7 +13,6 @@ import com.example.bidMarket.mapper.AuctionMapper;
 import com.example.bidMarket.mapper.ProductMapper;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Product;
-import com.example.bidMarket.model.ProductImage;
 import com.example.bidMarket.repository.AuctionRepository;
 import com.example.bidMarket.repository.ProductImageRepository;
 import com.example.bidMarket.repository.ProductRepository;
@@ -22,10 +22,15 @@ import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +46,41 @@ public class AuctionServiceImpl implements AuctionService {
     private final ProductMapper productMapper;
     private final UserRepository userRepository;
     private final ProductService productService;
+
+    @Override
+    public List<AuctionDto> getAllAuction() {
+        List<Auction> auctions = auctionRepository.findAll();
+        List<AuctionDto> auctionDtos = auctions.stream().map(auctionMapper::auctionToAuctionDto)
+                .toList();
+        return auctionDtos;
+    }
+
+    @Override
+    public AuctionDto getAuctionById(UUID id) {
+        Auction auction = auctionRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
+        return auctionMapper.auctionToAuctionDto(auction);
+    }
+
+    @Override
+    public Page<Auction> searchAuctions(String title,
+                                        CategoryType categoryType,
+                                        AuctionStatus status,
+                                        BigDecimal minPrice, BigDecimal maxPrice,
+                                        LocalDateTime startTime, LocalDateTime endTime,
+                                        int page, int size, String sortField, Sort.Direction sortDirection) {
+        Specification<Auction> spec = Specification
+                .where(AuctionSpecification.hasTitle(title))
+                .and(AuctionSpecification.hasCategoryType(categoryType))
+                .and(AuctionSpecification.hasStatus(status))
+                .and(AuctionSpecification.hasPriceBetween(minPrice, maxPrice))
+                .and(AuctionSpecification.hasStartTimeBetween(startTime, endTime));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
+        Page<Auction>auctions = auctionRepository.findAll(spec, pageable);
+        return auctions;
+
+    }
 
     @Override
     @Transactional
@@ -185,6 +225,8 @@ public class AuctionServiceImpl implements AuctionService {
             throw new AppException(ErrorCode.AUCTION_COMPLETE_FAILED);
         }
     }
+
+
 
 
 }

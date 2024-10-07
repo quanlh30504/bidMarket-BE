@@ -1,6 +1,8 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.Enum.ProductStatus;
+import com.example.bidMarket.SearchService.ProductSpecification;
 import com.example.bidMarket.dto.ProductDto;
 import com.example.bidMarket.dto.ProductImageDto;
 import com.example.bidMarket.dto.Request.ProductCreateRequest;
@@ -18,6 +20,11 @@ import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.expression.ExpressionException;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.stereotype.Service;
@@ -146,5 +153,17 @@ public class ProductServiceImpl implements ProductService {
         product.setStatus(status);
         productRepository.save(product);
         return productMapper.productToProductDto(product);
+    }
+
+    public Page<Product> searchProducts(String name, CategoryType categoryType, ProductStatus status,
+                                        int page, int size, String sortField, Sort.Direction sortDirection) {
+
+        Specification<Product> spec = Specification
+                .where(ProductSpecification.hasName(name))
+                .and(ProductSpecification.hasCategoryType(categoryType))
+                .and(ProductSpecification.hasStatus(status));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
+        return productRepository.findAll(spec, pageable);
     }
 }

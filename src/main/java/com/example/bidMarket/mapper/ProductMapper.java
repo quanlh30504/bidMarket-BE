@@ -31,7 +31,7 @@ public class ProductMapper {
     public ProductImage productImageDtoToProductImage(ProductImageDto productImageDto) {
         ProductImage productImage = new ProductImage();
         productImage.setImageUrl(productImageDto.getImageUrl());
-        productImage.setPrimary(productImageDto.isPrimary());
+        productImage.setPrimary(productImageDto.getIsPrimary());
 
         return productImage;
     }

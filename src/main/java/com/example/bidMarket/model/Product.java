@@ -1,6 +1,7 @@
 package com.example.bidMarket.model;
 
 import com.example.bidMarket.Enum.ProductStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,6 +36,7 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
+    @JsonIgnore
     private User seller;
 
     @Enumerated(EnumType.STRING)
@@ -45,6 +47,7 @@ public class Product {
     private int stockQuantity = 0;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<ProductImage> productImages;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
