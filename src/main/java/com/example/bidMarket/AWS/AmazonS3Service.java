@@ -40,7 +40,7 @@ public class AmazonS3Service {
         // Extract the S3 key from the URL
         String s3Key = image.substring(image.indexOf(".com/") + 5);  // Assuming URL follows the pattern
         amazonS3Client.deleteObject(new DeleteObjectRequest(bucketName, s3Key));
-        log.info("Deleted old avatar from S3: {}", image);
+        log.info("Deleted old image from S3: {}", image);
     }
 
     public String handleUpload(UUID entityId, MultipartFile imageFile, String entityType) throws IllegalAccessException {

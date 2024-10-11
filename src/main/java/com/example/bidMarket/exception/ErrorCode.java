@@ -89,6 +89,11 @@ public enum ErrorCode {
 
     // Category
     CATEGORY_NOT_EXISTED(12001,"Category not existed"),
+
+    //Order
+    ORDER_NOT_FOUND(13001,"Order not found"),
+    ORDER_UPDATE_STATUS(13002, "Update status order failed"),
+
     // Uncategorized errors (9999)
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error");
 

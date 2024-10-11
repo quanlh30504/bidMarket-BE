@@ -1,11 +1,11 @@
 package com.example.bidMarket.model;
 
+import com.example.bidMarket.Enum.PaymentMethod;
 import com.example.bidMarket.Enum.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.cglib.core.Local;
+import org.springframework.context.annotation.EnableMBeanExport;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,31 +15,44 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "payments")
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "auction_id", nullable = false)
-    private Auction auction;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bidder_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
-    @Column(name = "payment_amount")
-    private BigDecimal paymentAmount;
+    @Column(name = "transaction_id", nullable = false, unique = true)
+    private String transactionId;
+
+    @Column(name = "amount")
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
+
+    @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    @Column(name = "payment_due")
-    private LocalDateTime paymentDue;
+    @Column(name = "bank_code")
+    private String bankCode;
 
-    @Column(name = "payment_made_at")
-    private LocalDateTime paymentMadeAt;
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
+
+    @Column(name = "create_at")
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    private void preCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
 }
