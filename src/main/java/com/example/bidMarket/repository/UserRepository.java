@@ -19,4 +19,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Modifying
     @Query("update User u set u.passwordHash = ?2 where u = ?1")
     void updatePassword(User user, String password);
+
+    @Transactional
+    @Modifying
+    @Query("update User u set u.isVerified = true where u = ?1")
+    void updateStatus(User user);
 }
