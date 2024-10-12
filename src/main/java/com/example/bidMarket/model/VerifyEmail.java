@@ -13,11 +13,11 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @Data
-public class ForgotPassword {
+public class VerifyEmail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer fpid;
+    private Integer veid;
 
     @Column(nullable = false)
     private Integer otp;
