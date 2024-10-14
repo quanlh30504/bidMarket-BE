@@ -14,4 +14,6 @@ public interface OrderService {
     public OrderDto getOrder(UUID orderId);
     public List<OrderDto> getAllOrders();
     public void updateStatus (UUID orderId, OrderStatus orderStatus);
+
+    public OrderDto getOrderByAuctionId(UUID auctionId);
 }

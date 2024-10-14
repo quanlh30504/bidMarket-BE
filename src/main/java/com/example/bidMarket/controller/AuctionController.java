@@ -1,5 +1,6 @@
 package com.example.bidMarket.controller;
 
+import ch.qos.logback.core.sift.AppenderFactoryUsingSiftModel;
 import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.SearchService.PaginatedResponse;
@@ -68,7 +69,6 @@ public class AuctionController {
 
         log.info("Start search auction");
         Page<Auction> auctions = auctionService.searchAuctions(title, categoryType, status, minPrice, maxPrice, startTime, endTime, page, size, sortField, sortDirection);
-//        return auctions.map(auctionMapper::auctionToAuctionDto);
         List<AuctionSearchResponse> content = auctions.getContent().stream().map(auctionMapper::auctionToAuctionSearchResponse).toList();
 
         return new PaginatedResponse<>(
@@ -80,9 +80,30 @@ public class AuctionController {
                 auctions.isFirst(),
                 content
         );
-
     }
 
+    @PutMapping("/close/{auctionId}")
+    public ResponseEntity<String> closeAuction(@PathVariable UUID auctionId) {
+        auctionService.closeAuction(auctionId);
+        return ResponseEntity.ok("Close successfully auction " + auctionId);
+    }
 
+    @PutMapping("/cancel/{auctionId}")
+    public ResponseEntity<String> cancelAuction(@PathVariable UUID auctionId){
+        auctionService.cancelAuction(auctionId);
+        return ResponseEntity.ok("Cancel successfully auction " + auctionId);
+    }
+
+    @PutMapping("/open/{auctionId}")
+    public ResponseEntity<String> openAuction(@PathVariable UUID auctionId) {
+        auctionService.openAuction(auctionId);
+        return ResponseEntity.ok("Open successfully auction " + auctionId);
+    }
+
+    @PutMapping("reOpen/{id}")
+    public ResponseEntity<String> reOpenAuction(@PathVariable UUID id, @RequestBody AuctionUpdateRequest auctionUpdateRequest) {
+        auctionService.reOpenAuction(id, auctionUpdateRequest);
+        return ResponseEntity.ok("Reopen successfully auction " + id);
+    }
 }
 

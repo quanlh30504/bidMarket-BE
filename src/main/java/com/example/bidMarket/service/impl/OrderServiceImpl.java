@@ -68,4 +68,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
     }
+
+    @Override
+    public OrderDto getOrderByAuctionId(UUID auctionId) {
+        Order order = orderRepository.findByAuctionId(auctionId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        return orderMapper.orderToOrderDto(order);
+    }
+
 }

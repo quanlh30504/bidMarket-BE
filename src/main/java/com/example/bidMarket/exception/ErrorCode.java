@@ -45,6 +45,7 @@ public enum ErrorCode {
     AUCTION_COMPLETE_FAILED(5010, "Failed to complete auction"),
     AUCTION_CANCEL_FAILED(5011, "Failed to cancel auction"),
     AUCTION_REOPEN_FAILED(5012, "Failed to reopen auction"),
+    AUCTION_NOT_HAVE_BID(5013,"Auction don't have any bid"),
 
     // Bid-related errors (6xxx)
     BID_NOT_FOUND(6001, "Bid not found"),
@@ -52,7 +53,7 @@ public enum ErrorCode {
     BID_ALREADY_PLACED(6003, "Bid has already been placed"),
     BID_CREATION_FAILED(6004, "Failed to place bid"),
     BID_UPDATE_FAILED(6005, "Failed to update bid"),
-    BID_REJECTED_DUE_TO_CLOSURE(6006, "Bid rejected because the auction is closed"),
+    BID_IS_REJECTED(6006, "Bid is rejected because the auction is not open"),
 
     // Profile-related errors (7xxx)
     PROFILE_NOT_FOUND(7001, "Profile not found"),

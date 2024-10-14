@@ -6,10 +6,9 @@ import com.example.bidMarket.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -23,8 +22,14 @@ public class OrderController {
     private OrderMapper orderMapper;
 
     @PostMapping
-    private ResponseEntity<OrderDto> createOrder(@RequestBody OrderDto orderDto){
+    public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDto orderDto){
         log.info("Start create order");
         return ResponseEntity.ok(orderMapper.orderToOrderDto(orderService.createOrder(orderDto)));
+    }
+
+    @GetMapping("/auction/{auctionId}")
+    public ResponseEntity<OrderDto> getOrderByAuctionId(@PathVariable("auctionId") UUID auctionId) {
+        OrderDto orderDto = orderService.getOrderByAuctionId(auctionId);
+        return ResponseEntity.ok(orderDto);
     }
 }

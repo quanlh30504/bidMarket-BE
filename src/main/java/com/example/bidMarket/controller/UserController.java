@@ -33,7 +33,8 @@ public class UserController {
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RegisterResponse> register(
             @RequestPart("registerRequest") @Valid RegisterRequest registerRequest,
-            @RequestPart(value = "profileImageUrl", required = false) MultipartFile profileImageUrl) throws Exception {
+            @RequestPart(value = "profileImageUrl", required = false) MultipartFile profileImageUrl
+    ) throws Exception {
 
         logger.info("Start sign up");
         registerRequest.setProfileImageUrl(profileImageUrl);

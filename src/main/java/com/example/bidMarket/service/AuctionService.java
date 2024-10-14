@@ -6,6 +6,7 @@ import com.example.bidMarket.dto.Request.AuctionCreateRequest;
 import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.dto.Request.AuctionUpdateRequest;
 import com.example.bidMarket.model.Auction;
+import com.example.bidMarket.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 

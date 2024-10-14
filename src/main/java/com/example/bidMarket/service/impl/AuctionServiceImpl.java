@@ -1,9 +1,8 @@
 package com.example.bidMarket.service.impl;
 
-import com.example.bidMarket.Enum.AuctionStatus;
-import com.example.bidMarket.Enum.CategoryType;
-import com.example.bidMarket.Enum.ProductStatus;
+import com.example.bidMarket.Enum.*;
 import com.example.bidMarket.SearchService.AuctionSpecification;
+import com.example.bidMarket.dto.OrderDto;
 import com.example.bidMarket.dto.Request.AuctionCreateRequest;
 import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.dto.Request.AuctionUpdateRequest;
@@ -12,12 +11,12 @@ import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.AuctionMapper;
 import com.example.bidMarket.mapper.ProductMapper;
 import com.example.bidMarket.model.Auction;
+import com.example.bidMarket.model.Bid;
 import com.example.bidMarket.model.Product;
-import com.example.bidMarket.repository.AuctionRepository;
-import com.example.bidMarket.repository.ProductImageRepository;
-import com.example.bidMarket.repository.ProductRepository;
-import com.example.bidMarket.repository.UserRepository;
+import com.example.bidMarket.model.User;
+import com.example.bidMarket.repository.*;
 import com.example.bidMarket.service.AuctionService;
+import com.example.bidMarket.service.OrderService;
 import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -39,13 +39,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuctionServiceImpl implements AuctionService {
 
+    private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final ProductRepository productRepository;
-    private final ProductImageRepository productImageRepository;
+    private final BidRepository bidRepository;
+
     private final AuctionMapper auctionMapper;
-    private final ProductMapper productMapper;
-    private final UserRepository userRepository;
+
     private final ProductService productService;
+    private final OrderService orderService;
 
     @Override
     public List<AuctionDto> getAllAuction() {
@@ -154,30 +156,55 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
+    @Transactional
     public void openAuction(UUID id) {
         Auction auction = auctionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
-        if (auction.getStatus() == AuctionStatus.PENDING){
-            if (auction.getStartTime().isBefore(LocalDateTime.now())){
-                throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
-            }
-            auction.setStatus(AuctionStatus.OPEN);
-            Product product = auction.getProduct();
-            product.setStatus(ProductStatus.ACTIVE);
-            auctionRepository.save(auction);
-            productRepository.save(product);
-        }else {
+
+        if (auction.getStatus() != AuctionStatus.PENDING) {
             throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
         }
+//
+//        if (auction.getStartTime().isAfter(LocalDateTime.now())) {
+//            throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
+//        }
+
+        Product product = auction.getProduct();
+        if (product == null || product.getStatus() != ProductStatus.INACTIVE) {
+            throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
+        }
+
+        auction.setStatus(AuctionStatus.OPEN);
+        product.setStatus(ProductStatus.ACTIVE);
+
+        auctionRepository.save(auction);
+        productRepository.save(product);
     }
 
     @Override
-    public void closeAuction(UUID id) {
-        Auction auction = auctionRepository.findById(id)
+    @Transactional
+    public void closeAuction(UUID auctionId) {
+        Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
         if (auction.getStatus() == AuctionStatus.OPEN){
             auction.setStatus(AuctionStatus.CLOSED);
             auctionRepository.save(auction);
+
+            Optional <Bid> winBid = bidRepository.findFirstByAuctionIdAndStatusOrderByBidAmountDesc(auction.getId(), BidStatus.VALID);
+            if (winBid.isEmpty()){
+                throw new AppException(ErrorCode.AUCTION_NOT_HAVE_BID);
+            }
+
+            Bid bid = winBid.get();
+            OrderDto orderDto = OrderDto.builder()
+                    .userId(bid.getUserId())
+                    .auctionId(auction.getId())
+                    .totalAmount(bid.getBidAmount())
+                    .paymentDueDate(LocalDateTime.now().plusDays(5)) // Hard code: payment due date is 5 days from created order date.
+                    .status(OrderStatus.PENDING)
+                    .build();
+            // Create order
+            orderService.createOrder(orderDto);
         }else {
             throw new AppException(ErrorCode.AUCTION_CLOSE_FAILED);
         }
