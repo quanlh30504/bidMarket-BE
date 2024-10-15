@@ -22,14 +22,16 @@ public class WatchListServiceImpl implements WatchListService {
     private AuctionRepository auctionRepository;
 
     @Override
-    public List<WatchList> getWatchlistByUserId(UUID userId) {
-        // Corrected the method call to use the instance method
+    public List<WatchList> getWatchlistByUserId(UUID userId) throws Exception{
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return watchlistRepository.findByUserId(userId);
     }
 
     @Override
-    public List<WatchList> getWatchlistByAuctionId(UUID auctionId) {
-        // Corrected the method call to use the instance method
+    public List<WatchList> getWatchlistByAuctionId(UUID auctionId) throws Exception {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
         return watchlistRepository.findByAuctionId(auctionId);
     }
     @Override
