@@ -12,8 +12,12 @@ import java.util.UUID;
 @Data
 public class ProductUpdateRequest {
     private String name;
+
     private String description;
+
     private int stockQuantity;
+
     private List<ProductImageDto> productImages;
+
     private Set<CategoryType> categories;
 }

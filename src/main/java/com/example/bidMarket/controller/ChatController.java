@@ -6,5 +6,5 @@ import org.springframework.stereotype.Controller;
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
-    private final ChatService chatService;
+//    private final ChatService chatService;
 }

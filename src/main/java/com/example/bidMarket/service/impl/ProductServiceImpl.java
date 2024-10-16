@@ -16,6 +16,7 @@ import com.example.bidMarket.model.ProductImage;
 import com.example.bidMarket.repository.CategoryRepository;
 import com.example.bidMarket.repository.ProductImageRepository;
 import com.example.bidMarket.repository.ProductRepository;
+import com.example.bidMarket.service.ImageService;
 import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.expression.ExpressionException;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final ImageService imageService;
 
 //    private final ProductCategoryRepository productCategoryRepository;
     private final ProductRepository productRepository;
@@ -63,21 +66,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product createProduct(ProductCreateRequest request) throws Exception {
+    public Product createProduct(ProductCreateRequest request, List<MultipartFile> images) throws Exception {
         Product product = productMapper.productCreateToProduct(request);
-        List<ProductImageDto> productImageDtoList = request.getProductImages();
-        // Lưu hình ảnh sản phẩm
-        if (productImageDtoList != null && !productImageDtoList.isEmpty()) {
-            List<ProductImage> productImageList= new ArrayList<>();
-            for (ProductImageDto imageDto : productImageDtoList) {
-                ProductImage productImage = productMapper.productImageDtoToProductImage(imageDto);
-                productImage.setProduct(product);
-                productImageList.add(productImage);
-            }
-            product.setProductImages(productImageList);
-        }
+
+        // Save product to get its Id
         product = productRepository.save(product);
-        return product;
+
+        // Lưu hình ảnh sản phẩm
+        if (images != null && !images.isEmpty()) {
+            List<String> imageUrls = imageService.uploadProductImages(product.getId(), images);
+            List<ProductImage> productImages = new ArrayList<>();
+            for (int i = 0; i < imageUrls.size(); i++) {
+                ProductImage productImage = new ProductImage();
+                productImage.setImageUrl(imageUrls.get(i));
+                productImage.setPrimary(i == 0);
+                productImage.setProduct(product);
+                productImages.add(productImage);
+            }
+            product.setProductImages(productImages);
+        }
+        return productRepository.save(product);
     }
 
     @Override
