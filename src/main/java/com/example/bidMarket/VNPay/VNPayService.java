@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class VNPayService {
     private final VNPayConfig vnPayConfig;
 
-    public String createOrder(HttpServletRequest request, int amount, String orderInfo, String urlReturn){
+    public String createPayment(HttpServletRequest request, int amount, String orderInfo, String urlReturn){
         String vnp_Version = vnPayConfig.getVnp_Version();
         String vnp_Command = vnPayConfig.getVnp_Command();
         String vnp_TxnRef = vnPayConfig.getRandomNumber(8);

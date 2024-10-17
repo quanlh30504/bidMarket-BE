@@ -17,8 +17,6 @@ import java.util.UUID;
 
 public interface AuctionService {
     public AuctionDto createAuction (AuctionCreateRequest auctionCreateRequest) throws Exception;
-    public AuctionDto changeAuctionStatus (UUID id, AuctionStatus status) throws Exception;
-
     public Auction updateAuction(UUID id, AuctionUpdateRequest auctionUpdateRequest);
     public void deleteAuction(UUID id);
     public void openAuction(UUID id);

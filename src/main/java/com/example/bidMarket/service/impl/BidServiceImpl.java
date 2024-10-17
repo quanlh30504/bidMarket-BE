@@ -4,6 +4,9 @@ import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
 import com.example.bidMarket.dto.Response.BidCreateResponse;
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
+import com.example.bidMarket.mapper.BidMapper;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Bid;
 import com.example.bidMarket.model.Payment;
@@ -17,8 +20,13 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +38,8 @@ public class BidServiceImpl implements BidService {
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final PaymentRepository paymentRepository;
+
+    private final BidMapper bidMapper;
 
     @Override
     @Transactional
@@ -91,6 +101,38 @@ public class BidServiceImpl implements BidService {
         }
         bidRepository.save(bid);
     }
+
+    // Service này lấy tat ca cac bid cua auction (Valid và Invalid)
+    @Override
+    public Page<BidDto> getAllBidsOfAuction(UUID auctionId, int page, int size, String sortField, Sort.Direction direction) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        Page<Bid> bids = bidRepository.findAllByAuctionId(auctionId, pageable);
+
+        if (bids.isEmpty()) {
+            log.error("No bids found for auction ID: " + auctionId);
+            throw new AppException(ErrorCode.BID_NOT_FOUND);
+        }
+
+        return bids.map(bidMapper::bidToBidDto);
+    }
+
+    // Service lấy các bid hop le (VALID) của auction
+    @Override
+    public Page<BidDto> getBidsOfAuction(UUID auctionId, int page, int size, BidStatus status, String sortField, Sort.Direction direction) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        Page<Bid> bids = bidRepository.findAllByAuctionIdAndStatus(auctionId, BidStatus.VALID, pageable);
+
+        if (bids.isEmpty()) {
+            log.warn("No valid bids found for auction ID: " + auctionId);
+            throw new AppException(ErrorCode.BID_NOT_FOUND);
+        }
+
+        return bids.map(bidMapper::bidToBidDto);
+
+    }
+
+
+
 
 
 }

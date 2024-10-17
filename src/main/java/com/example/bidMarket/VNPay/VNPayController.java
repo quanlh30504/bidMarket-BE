@@ -5,11 +5,16 @@ import com.example.bidMarket.Enum.OrderStatus;
 import com.example.bidMarket.Enum.PaymentMethod;
 import com.example.bidMarket.Enum.PaymentStatus;
 import com.example.bidMarket.dto.PaymentDto;
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.PaymentMapper;
+import com.example.bidMarket.model.Order;
+import com.example.bidMarket.repository.OrderRepository;
 import com.example.bidMarket.service.OrderService;
 import com.example.bidMarket.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +25,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping()
 @RequiredArgsConstructor
+@Slf4j
 public class VNPayController {
+    private final OrderRepository orderRepository;
 
     private final VNPayService vnPayService;
     private final PaymentService paymentService;
@@ -34,10 +41,17 @@ public class VNPayController {
     */
     @PostMapping("/submitOrder")
     public String submidOrder(@RequestParam("amount") int orderTotal,
-                              @RequestParam("orderInfo") String orderInfo,
+                              @RequestParam("orderInfo") String orderInfo,  // Order info is order id
                               HttpServletRequest request){
+        Order order = orderRepository.findById(UUID.fromString(orderInfo))
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            log.error("Order is not pending so you can't payment");
+            throw new AppException(ErrorCode.PAYMENT_FAILED);
+        }
         String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        String vnpayUrl = vnPayService.createOrder(request, orderTotal, orderInfo, baseUrl);
+        String vnpayUrl = vnPayService.createPayment(request, orderTotal, orderInfo, baseUrl);
         return "redirect:" + vnpayUrl;
     }
 

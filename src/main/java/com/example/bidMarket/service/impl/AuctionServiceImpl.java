@@ -10,10 +10,7 @@ import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.AuctionMapper;
 import com.example.bidMarket.mapper.ProductMapper;
-import com.example.bidMarket.model.Auction;
-import com.example.bidMarket.model.Bid;
-import com.example.bidMarket.model.Product;
-import com.example.bidMarket.model.User;
+import com.example.bidMarket.model.*;
 import com.example.bidMarket.repository.*;
 import com.example.bidMarket.service.AuctionService;
 import com.example.bidMarket.service.OrderService;
@@ -38,6 +35,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuctionServiceImpl implements AuctionService {
+    private final OrderRepository orderRepository;
 
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
@@ -87,8 +85,28 @@ public class AuctionServiceImpl implements AuctionService {
     @Override
     @Transactional
     public AuctionDto createAuction(AuctionCreateRequest auctionCreateRequest) throws Exception {
-        // Tạo Product entity từ DTO
-        Product product = productService.createProduct(auctionCreateRequest.getProductCreateRequest());
+        if (auctionCreateRequest.getStartTime().isBefore(LocalDateTime.now().plusMinutes(30))) {
+            log.error("Time start auction must be at least 30 minutes after the current time");
+            throw new AppException(ErrorCode.AUCTION_CREATION_FAILED);
+        }
+
+        Product product;
+
+        // Kiểm tra xem sản phẩm đã tồn tại hay chưa
+        if (auctionCreateRequest.getProductCreateRequest().getProductId() != null) {
+            // Lấy sản phẩm từ cơ sở dữ liệu
+            product = productRepository.findById(auctionCreateRequest.getProductCreateRequest().getProductId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+            // Kiểm tra trạng thái sản phẩm
+            if (product.getStatus() != ProductStatus.INACTIVE) {
+                log.error("Product is not in an INACTIVE state");
+                throw new AppException(ErrorCode.PRODUCT_NOT_AVAILABLE);
+            }
+        } else {
+            // Nếu không có productId, tạo một sản phẩm mới
+            product = productService.createProduct(auctionCreateRequest.getProductCreateRequest());
+        }
 
         // Tạo phiên đấu giá từ DTO và product đã được lưu
         Auction auction = auctionMapper.auctionCreateToAuction(auctionCreateRequest, product);
@@ -96,17 +114,6 @@ public class AuctionServiceImpl implements AuctionService {
 
         AuctionDto auctionDto = auctionMapper.auctionToAuctionDto(auction);
         return auctionDto;
-    }
-
-    @Override
-    @Transactional
-    public AuctionDto changeAuctionStatus(UUID id, AuctionStatus status) throws Exception {
-        Auction auction = auctionRepository.findById(id).orElseThrow(() -> new Exception("Not found auction id"));
-        if (auction.getStatus() == AuctionStatus.COMPLETED || auction.getStatus() == AuctionStatus.CLOSED) {
-            throw new Exception("Auction was completed or canceled, so can't change status");
-        }
-        auction.setStatus(status);
-        return auctionMapper.auctionToAuctionDto(auctionRepository.save(auction));
     }
 
     @Override
@@ -162,15 +169,18 @@ public class AuctionServiceImpl implements AuctionService {
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
 
         if (auction.getStatus() != AuctionStatus.PENDING) {
+            log.error("Auction status is not PENDING");
             throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
         }
-//
-//        if (auction.getStartTime().isAfter(LocalDateTime.now())) {
-//            throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
-//        }
+
+        if (!auction.getStartTime().isAfter(LocalDateTime.now())) {
+            log.error("Time starting auction is invalid");
+            throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
+        }
 
         Product product = auction.getProduct();
         if (product == null || product.getStatus() != ProductStatus.INACTIVE) {
+            log.error("Product of this auction was ACTIVE");
             throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
         }
 
@@ -218,6 +228,14 @@ public class AuctionServiceImpl implements AuctionService {
             auction.setStatus(AuctionStatus.CANCELED);
             Product product = auction.getProduct();
             product.setStatus(ProductStatus.INACTIVE);
+
+            // Cancel order
+            Optional<Order> order = orderRepository.findByAuctionId(auction.getId());
+            if (order.isPresent() && order.get().getStatus() == OrderStatus.PENDING) {
+                Order orderValue = order.get();
+                orderValue.setStatus(OrderStatus.CANCELED);
+                orderRepository.save(orderValue);
+            }
             auctionRepository.save(auction);
             productRepository.save(product);
         }else {
@@ -257,3 +275,29 @@ public class AuctionServiceImpl implements AuctionService {
 
 
 }
+
+/*
+
+tôi cần tư vấn logic việc cancel của 1 auction, khi đó tôi đang áp dụng việc sẽ chuyển status của các order được tạo ra từ auction như code dưới, 1 order có các status là peding, paid, completed, cancel. Tuy nhiên logic xử lí order có thể còn xót và chưa tối ưu, hãy phân tích và cho giải pháp :
+    public void cancelAuction(UUID id) {
+        Auction auction = auctionRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
+        if (auction.getStatus() != AuctionStatus.COMPLETED){
+            auction.setStatus(AuctionStatus.CANCELED);
+            Product product = auction.getProduct();
+            product.setStatus(ProductStatus.INACTIVE);
+
+            // Cancel order
+            Optional<Order> order = orderRepository.findByAuctionId(auction.getId());
+            if (order.isPresent() && order.get().getStatus() == OrderStatus.PENDING) {
+                Order orderValue = order.get();
+                orderValue.setStatus(OrderStatus.CANCELED);
+                orderRepository.save(orderValue);
+            }
+            auctionRepository.save(auction);
+            productRepository.save(product);
+        }else {
+            throw new AppException(ErrorCode.AUCTION_CANCEL_FAILED);
+        }
+    }
+ */

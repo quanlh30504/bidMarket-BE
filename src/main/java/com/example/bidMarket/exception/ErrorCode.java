@@ -68,6 +68,7 @@ public enum ErrorCode {
     PRODUCT_DELETION_FAILED(8004, "Failed to delete product"),
     PRODUCT_OUT_OF_STOCK(8005, "Product is out of stock"),
     PRODUCT_ALREADY_LISTED(8006, "Product is already listed for auction"),
+    PRODUCT_NOT_AVAILABLE(8007, "Product is not available because product is active"),
 
     // System errors (9xxx)
     SYSTEM_ERROR(9001, "System error occurred"),

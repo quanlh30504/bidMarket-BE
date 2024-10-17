@@ -83,6 +83,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                         .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         if (product.getStatus() == ProductStatus.ACTIVE) {
+            log.warn("Product is active so can't delete this product");
             throw new AppException(ErrorCode.PRODUCT_DELETION_FAILED);
         }
         productRepository.deleteById(productId);
