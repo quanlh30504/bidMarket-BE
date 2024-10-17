@@ -23,10 +23,10 @@ import java.util.UUID;
 public class AmazonS3Service {
     private final AmazonS3 amazonS3Client;
 
-    @Value("${DEFAULT_AVATAR_URL}")
+    @Value("${aws.default_avatar_url}")
     private String DEFAULT_AVATAR_URL;
 
-    @Value("${DEFAULT_PRODUCT_URL}")
+    @Value("${aws.default_product_url}")
     private String DEFAULT_PRODUCT_URL;
 
 

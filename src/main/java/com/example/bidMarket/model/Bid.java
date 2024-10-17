@@ -41,8 +41,4 @@ public class Bid {
     @Column(name = "bid_time")
     private LocalDateTime bidTime;
 
-    @LastModifiedDate
-    @Column(name = "update_at")
-    private LocalDateTime updateAt;
-
 }

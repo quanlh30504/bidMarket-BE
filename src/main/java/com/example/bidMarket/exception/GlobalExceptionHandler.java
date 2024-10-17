@@ -2,6 +2,7 @@ package com.example.bidMarket.exception;
 
 
 import com.example.bidMarket.dto.Response.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class) // bắt all bug
@@ -17,6 +19,9 @@ public class GlobalExceptionHandler {
 
         response.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode()); //bug
         response.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
+
+        // Log with appropriate level and include stack trace
+        log.error("Unhandled exception occurred: {}", e.getMessage(), e);
         return ResponseEntity.badRequest().body(response);
     }
 
@@ -27,6 +32,9 @@ public class GlobalExceptionHandler {
 
         response.setCode(errorCode.getCode()); //bug
         response.setMessage(errorCode.getMessage());
+
+        // Log with appropriate level and include stack trace
+        log.error("Unhandled exception occurred: {}", e.getMessage(), e);
         return ResponseEntity.badRequest().body(response);
     }
 
@@ -46,6 +54,8 @@ public class GlobalExceptionHandler {
         response.setCode(errorCode.getCode()); //bug
         response.setMessage(errorCode.getMessage());
 
+        // Log with appropriate level and include stack trace
+        log.error("Unhandled exception occurred: {}", e.getMessage(), e);
         return ResponseEntity.badRequest().body(response);
     }
 }
