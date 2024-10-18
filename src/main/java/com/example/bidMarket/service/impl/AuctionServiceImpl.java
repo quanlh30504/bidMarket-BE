@@ -105,7 +105,7 @@ public class AuctionServiceImpl implements AuctionService {
             }
         } else {
             // Nếu không có productId, tạo một sản phẩm mới
-            product = productService.createProduct(auctionCreateRequest.getProductCreateRequest());
+            product = productService.createProduct(auctionCreateRequest.getProductCreateRequest(), null);
         }
 
         // Tạo phiên đấu giá từ DTO và product đã được lưu
