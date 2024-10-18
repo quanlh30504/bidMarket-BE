@@ -55,6 +55,7 @@ log:
     com.example.bidMarket: DEBUG
 
 
+
 aws:
   access:
     key:
