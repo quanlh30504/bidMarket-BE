@@ -35,6 +35,9 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
     public ResponseEntity<String> verifyEmailForgotPassword(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address" + email));
+
+        verifyEmailRepository.findByUser(user).ifPresent(verifyEmailRepository::delete);
+
         int otp = otpGenerator();
         MailBody mailBody = MailBody.builder()
                 .to(email)
@@ -57,6 +60,9 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
     public ResponseEntity<String> verifyEmailRegister(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address" + email));
+
+        verifyEmailRepository.findByUser(user).ifPresent(verifyEmailRepository::delete);
+
         int otp = otpGenerator();
         MailBody mailBody = MailBody.builder()
                 .to(email)
@@ -76,7 +82,7 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
     }
 
     @Override
-    public ResponseEntity<String> verifyOtp(Integer otp, String email) {
+    public ResponseEntity<String> verifyOtpRegister(Integer otp, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address"));
 
@@ -84,11 +90,28 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
                 .orElseThrow(() -> new RuntimeException("Invalid OTP for email: " + email));
 
         if (fp.getExpirationTime().before(Date.from(Instant.now()))) {
-            verifyEmailRepository.deleteById(fp.getVeid());
+            verifyEmailRepository.deleteById(fp.getId());
             return new ResponseEntity<>("OTP expired. Please try again", HttpStatus.EXPECTATION_FAILED);
         }
         userRepository.updateStatus(user); // update user status to verified
-        verifyEmailRepository.deleteById(fp.getVeid());
+        verifyEmailRepository.deleteById(fp.getId());
+        return ResponseEntity.ok("OTP verified successfully");
+    }
+
+    @Override
+    public ResponseEntity<String> verifyOtpForgotPassword(Integer otp, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address"));
+
+        VerifyEmail fp = verifyEmailRepository.findByOtpAndUser(otp, user)
+                .orElseThrow(() -> new RuntimeException("Invalid OTP for email: " + email));
+
+        if (fp.getExpirationTime().before(Date.from(Instant.now()))) {
+            verifyEmailRepository.deleteById(fp.getId());
+            return new ResponseEntity<>("OTP expired. Please try again", HttpStatus.EXPECTATION_FAILED);
+        }
+
+        verifyEmailRepository.deleteById(fp.getId());
         return ResponseEntity.ok("OTP verified successfully");
     }
 

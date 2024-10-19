@@ -9,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 public interface VerifyEmailService {
     ResponseEntity<String> verifyEmailForgotPassword(String email);
     ResponseEntity<String> verifyEmailRegister(String email);
-    ResponseEntity<String> verifyOtp(Integer otp, String email);
+    ResponseEntity<String> verifyOtpRegister(Integer otp, String email);
+    ResponseEntity<String> verifyOtpForgotPassword(Integer otp, String email);
     ResponseEntity<String> changePasswordHandler(ChangePassword changePassword, String email);
 
 }

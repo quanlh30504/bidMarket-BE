@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface VerifyEmailRepository extends JpaRepository<VerifyEmail, Integer> {
     @Query("select ve from VerifyEmail ve where ve.otp = ?1 and ve.user = ?2")
     Optional<VerifyEmail> findByOtpAndUser(Integer otp, User user);
+
+    Optional<VerifyEmail> findByUser(User user);
 }

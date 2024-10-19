@@ -9,6 +9,7 @@ import com.example.bidMarket.dto.Response.RegisterResponse;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.UserService;
+import com.example.bidMarket.service.VerifyEmailService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,24 +28,34 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
+    private final VerifyEmailService verifyEmailService;
+
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService, UserRepository userRepository, VerifyEmailService verifyEmailService) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.verifyEmailService = verifyEmailService;
     }
 
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RegisterResponse> register(
-            @RequestPart("registerRequest") @Valid RegisterRequest registerRequest,
-            @RequestPart(value = "profileImageUrl", required = false) MultipartFile profileImageUrl
-    ) throws Exception {
+            @ModelAttribute @Valid RegisterRequest registerRequest,
+//            @RequestPart(value = "profileImageUrl", required = false) MultipartFile profileImageUrl
+            @RequestPart(value = "frontImage", required = false) MultipartFile frontImage,
+            @RequestPart(value = "backImage", required = false) MultipartFile backImage) throws Exception {
 
-        logger.info("Start sign up");
-        registerRequest.setProfileImageUrl(profileImageUrl);
+        logger.info("Start sign up for user: {}", registerRequest.getEmail());
+//        registerRequest.setProfileImageUrl(profileImageUrl);
 
         RegisterResponse registerResponse = userService.createUser(registerRequest);
+        verifyEmailService.verifyEmailRegister(registerRequest.getEmail());
         return ResponseEntity.ok(registerResponse);
+    }
+
+    @PostMapping("/signup/verifyEmail/{otp}/{email}")
+    public ResponseEntity<String> verifyEmail(@PathVariable Integer otp, @PathVariable String email) {
+        return verifyEmailService.verifyOtpRegister(otp, email);
     }
 
     @PostMapping("/signin")
@@ -55,6 +66,7 @@ public class UserController {
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
 
         if (!user.isVerified()) {
+            logger.error("User not verified");
             throw new RuntimeException("User is not verified");
         }
         try {

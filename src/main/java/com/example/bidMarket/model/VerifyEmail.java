@@ -17,7 +17,7 @@ public class VerifyEmail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer veid;
+    private Integer id;
 
     @Column(nullable = false)
     private Integer otp;
