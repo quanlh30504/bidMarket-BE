@@ -21,6 +21,21 @@ spring:
     partitions:
       bid: 10
 
+  mail:
+    host: ${mailServer.host}
+    port: ${mailServer.port}
+    username: ${mailServer.email}
+    password: ${mailServer.password}
+    properties:
+      mail:
+        smtp:
+          auth: ${mailServer.properties.mail.smtp.auth}
+          starttls:
+            enable: ${mailServer.properties.mail.smtp.starttls.enable}
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
 
   datasource:
     url: ${DB_URL}
@@ -52,6 +67,7 @@ log:
     com.example.bidMarket: DEBUG
 
 
+
 aws:
   access:
     key:
@@ -75,3 +91,22 @@ payment:
     version: ${VNP_VERSION}
     command: ${VNP_COMMAND}
     orderType: ${ORDER_TYPE}
+
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+mailServer:
+  host: smtp.gmail.com
+  port: 587
+  email: naitesbi@gmail.com
+  password: wdqtvrdkrwytgkkc
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+  isSSL: false

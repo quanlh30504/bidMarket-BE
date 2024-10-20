@@ -1,5 +1,6 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.AWS.AmazonS3Service;
 import com.example.bidMarket.dto.*;
 import com.example.bidMarket.dto.Request.LoginRequest;
 import com.example.bidMarket.dto.Request.RefreshTokenRequest;
@@ -21,6 +22,7 @@ import com.example.bidMarket.security.JwtTokenProvider;
 import com.example.bidMarket.service.ImageService;
 import com.example.bidMarket.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -28,16 +30,20 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -51,7 +57,7 @@ public class UserServiceImpl implements UserService {
     private final IdCardRepository idCardRepository;
     private final ImageService imageService;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-
+    private final AmazonS3Service amazonS3Service;
 
     @Override
     @Transactional
@@ -64,17 +70,58 @@ public class UserServiceImpl implements UserService {
         User user = registerMapper.requestToUser(registerRequest);
         user = userRepository.save(user);
 
-        // Create and save profile
+        // Create profile
         Profile profile = registerMapper.requestToProfile(user, registerRequest);
+
+//        // Handle profile image upload
+//        MultipartFile profileImage = registerRequest.getProfileImage();
+//        if (profileImage != null && !profileImage.isEmpty()) {
+//            try {
+//                String profileImageUrl = imageService.uploadImage(profileImage, "users");
+//                profile.setProfileImageUrl(profileImageUrl);
+//                log.info("Success upload image");
+//            } catch (IOException e) {
+//                log.error("Error while uploading profile image", e);
+//                profile.setProfileImageUrl(amazonS3Service.getDefaultUrl("users"));
+//            }
+//        } else {
+//            profile.setProfileImageUrl(amazonS3Service.getDefaultUrl("users"));
+//        }
+
         profile = profileRepository.save(profile);
         user.setProfile(profile);
-        user = userRepository.save(user);
-        
-        // handle profile image upload
-        imageService.uploadUserAvatar(user.getId(), registerRequest.getProfileImageUrl());
 
+        // Handle seller information
         if (user.getRole() == Role.SELLER) {
             IdCard idCard = registerMapper.requestToIdCard(user, registerRequest);
+
+            // Handle front and back image upload
+            MultipartFile frontImage = registerRequest.getFrontImage();
+            if (frontImage != null && !frontImage.isEmpty()) {
+                try {
+                    String frontImageUrl = imageService.uploadImage(frontImage, "id-cards");
+                    idCard.setFrontImageURL(frontImageUrl);
+                } catch (IOException e) {
+                    log.error("Error while uploading front Id card image for user: {}", user.getEmail(), e);
+                    throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+                }
+            } else {
+                log.warn("Front Image id card is empty");
+            }
+
+            MultipartFile backImage = registerRequest.getBackImage();
+            if (backImage != null && !backImage.isEmpty()) {
+                try {
+                    String backImageUrl = imageService.uploadImage(backImage, "id-cards");
+                    idCard.setBackImageURL(backImageUrl);
+                } catch (IOException e) {
+                    throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+                }
+            } else {
+                log.warn("Back Image id card is empty");
+            }
+
+            idCard = idCardRepository.save(idCard);
             user.setIdCard(idCard);
         }
 

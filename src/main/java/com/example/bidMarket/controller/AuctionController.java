@@ -1,8 +1,11 @@
 package com.example.bidMarket.controller;
 
+import ch.qos.logback.core.sift.AppenderFactoryUsingSiftModel;
 import com.example.bidMarket.Enum.AuctionStatus;
+import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.SearchService.PaginatedResponse;
+import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.AuctionCreateRequest;
 import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.dto.Request.AuctionUpdateRequest;
@@ -11,6 +14,7 @@ import com.example.bidMarket.dto.Response.AuctionSearchResponse;
 import com.example.bidMarket.mapper.AuctionMapper;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.service.AuctionService;
+import com.example.bidMarket.service.BidService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +34,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuctionController {
     private final AuctionService auctionService;
+    private final BidService bidService;
     private final AuctionMapper auctionMapper;
 
     @PostMapping()
@@ -68,7 +73,6 @@ public class AuctionController {
 
         log.info("Start search auction");
         Page<Auction> auctions = auctionService.searchAuctions(title, categoryType, status, minPrice, maxPrice, startTime, endTime, page, size, sortField, sortDirection);
-//        return auctions.map(auctionMapper::auctionToAuctionDto);
         List<AuctionSearchResponse> content = auctions.getContent().stream().map(auctionMapper::auctionToAuctionSearchResponse).toList();
 
         return new PaginatedResponse<>(
@@ -80,9 +84,52 @@ public class AuctionController {
                 auctions.isFirst(),
                 content
         );
-
     }
 
+    @PutMapping("/close/{auctionId}")
+    public ResponseEntity<String> closeAuction(@PathVariable UUID auctionId) {
+        auctionService.closeAuction(auctionId);
+        return ResponseEntity.ok("Close successfully auction " + auctionId);
+    }
 
+    @PutMapping("/cancel/{auctionId}")
+    public ResponseEntity<String> cancelAuction(@PathVariable UUID auctionId){
+        auctionService.cancelAuction(auctionId);
+        return ResponseEntity.ok("Cancel successfully auction " + auctionId);
+    }
+
+    @PutMapping("/open/{auctionId}")
+    public ResponseEntity<String> openAuction(@PathVariable UUID auctionId) {
+        auctionService.openAuction(auctionId);
+        return ResponseEntity.ok("Open successfully auction " + auctionId);
+    }
+
+    @PutMapping("reOpen/{id}")
+    public ResponseEntity<String> reOpenAuction(@PathVariable UUID id, @RequestBody AuctionUpdateRequest auctionUpdateRequest) {
+        auctionService.reOpenAuction(id, auctionUpdateRequest);
+        return ResponseEntity.ok("Reopen successfully auction " + id);
+    }
+
+    @GetMapping("/{auctionId}/bids")
+    public PaginatedResponse<BidDto> getBidsHistoryOfAuction(
+            @PathVariable UUID auctionId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "VALID") BidStatus status,
+            @RequestParam(defaultValue = "bidTime") String sortField,
+            @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
+
+        Page<BidDto> bidDtos = bidService.getBidsOfAuction(auctionId, page, size,status, sortField, direction);
+        return new PaginatedResponse<>(
+                bidDtos.getNumber(),
+                bidDtos.getSize(),
+                bidDtos.getTotalElements(),
+                bidDtos.getTotalPages(),
+                bidDtos.isLast(),
+                bidDtos.isFirst(),
+                bidDtos.stream().toList()
+        );
+
+    }
 }
 

@@ -36,7 +36,8 @@ public class SecurityConfig {
             "/submitOrder",
             "/vnpay-payment-return",
             "/api/bids/**",
-            "/api/products/**"
+            "/api/products/**",
+            "/api/orders/**"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -64,7 +65,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(WHITE_LIST_URL).permitAll()
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
