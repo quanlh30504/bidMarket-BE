@@ -16,7 +16,8 @@ public class BidConsumer {
 
     @KafkaListener(topics = "${spring.kafka.topic.bid_request}", groupId = "${spring.kafka.consumer.group-id}")
     public void listenBidRequest(BidCreateRequest bidRequest){
+        log.info("processing bid in auction id " + bidRequest.getAuctionId());
         bidService.processBid(bidRequest);
-        log.info("processed bid in auction id " + bidRequest.getAuctionId());
+
     }
 }

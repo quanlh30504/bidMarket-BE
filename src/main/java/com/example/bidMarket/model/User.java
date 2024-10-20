@@ -36,11 +36,17 @@ public class User {
     @Column(name = "is_banned")
     private boolean isBanned = false;
 
+    @Column(name = "is_verified")
+    private boolean isVerified = false;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Profile profile;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private IdCard idCard;
+
+    @OneToOne(mappedBy = "user")
+    private VerifyEmail verifyEmail;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

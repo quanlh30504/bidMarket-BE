@@ -25,8 +25,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.expression.ExpressionException;
-import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -42,7 +40,6 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
 
-//    private final ProductCategoryRepository productCategoryRepository;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
@@ -86,6 +83,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                         .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         if (product.getStatus() == ProductStatus.ACTIVE) {
+            log.warn("Product is active so can't delete this product");
             throw new AppException(ErrorCode.PRODUCT_DELETION_FAILED);
         }
         productRepository.deleteById(productId);
