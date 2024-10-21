@@ -11,7 +11,7 @@ import org.springframework.web.context.request.WebRequest;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(value = Exception.class) // bắt all bug
+    @ExceptionHandler(RuntimeException.class) // bắt all bug
     ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException e){
         ApiResponse response = new ApiResponse();
 

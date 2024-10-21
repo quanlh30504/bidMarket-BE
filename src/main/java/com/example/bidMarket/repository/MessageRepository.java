@@ -1,6 +1,5 @@
 package com.example.bidMarket.repository;
 
-import com.example.bidMarket.model.ChatRoom;
 import com.example.bidMarket.model.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 

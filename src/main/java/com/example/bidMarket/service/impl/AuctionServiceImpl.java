@@ -127,7 +127,8 @@ public class AuctionServiceImpl implements AuctionService {
         auction.setCurrentPrice(request.getStartingPrice());
         auction.setMinimumBidIncrement(request.getMinimumBidIncrement());
 
-        productService.updateProduct(auction.getProduct().getId(), request.getProductUpdateRequest());
+        //temporary
+//        productService.updateProduct(auction.getProduct().getId(), request.getProductUpdateRequest());
 
         auction = auctionRepository.save(auction);
         return auction;

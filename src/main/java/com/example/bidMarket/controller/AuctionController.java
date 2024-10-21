@@ -16,8 +16,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -36,8 +38,12 @@ public class AuctionController {
     public ResponseEntity<AuctionDto> createAuction (@RequestBody AuctionCreateRequest request) throws Exception {
         return ResponseEntity.ok(auctionService.createAuction(request));
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<AuctionDto> updateAuction(@PathVariable UUID id, @RequestBody AuctionUpdateRequest request){
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AuctionDto> updateAuction(
+            @PathVariable UUID id,
+            @RequestPart AuctionUpdateRequest request,
+            @RequestPart(value = "newImages", required = false) MultipartFile newImages) throws Exception {
         Auction auction = auctionService.updateAuction(id, request);
         return ResponseEntity.ok(auctionMapper.auctionToAuctionDto(auction));
     }

@@ -1,5 +1,6 @@
 package com.example.bidMarket.model;
 
+import com.example.bidMarket.Enum.MessageStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -20,7 +21,7 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom chatRoom;
+    private ChatMessage chatRoom;
 
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)

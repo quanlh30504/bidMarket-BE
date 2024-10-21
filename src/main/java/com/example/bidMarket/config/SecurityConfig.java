@@ -36,7 +36,8 @@ public class SecurityConfig {
             "/submitOrder",
             "/vnpay-payment-return",
             "/api/bids/**",
-            "/api/products/**"
+            "/api/products/**",
+            "/api/messages/**"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;

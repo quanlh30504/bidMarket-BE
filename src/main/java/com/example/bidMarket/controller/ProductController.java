@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -69,16 +70,22 @@ public class ProductController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ProductDto> createProduct(
-            @ModelAttribute ProductCreateRequest request,
+    public ResponseEntity<?> createProduct(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("sellerId") UUID sellerId,
+            @RequestParam("stockQuantity") Integer stockQuantity,
+            @RequestParam("categories") Set<CategoryType> categories,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
 
+        ProductCreateRequest request = new ProductCreateRequest();
+        request.setName(name);
+        request.setDescription(description);
+        request.setSellerId(sellerId);
+        request.setStockQuantity(stockQuantity);
+        request.setCategories(categories);
+
         logger.info("Received request to create product: {}", request);
-        logger.info("Name: {}", request.getName());
-        logger.info("Description: {}", request.getDescription());
-        logger.info("SellerId: {}", request.getSellerId());
-        logger.info("StockQuantity: {}", request.getStockQuantity());
-        logger.info("Categories: {}", request.getCategories());
         logger.info("Number of images: {}", images != null ? images.size() : 0);
 
         Product createdProduct = productService.createProduct(request, images);
@@ -86,9 +93,11 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct (@PathVariable UUID id, @RequestBody ProductUpdateRequest request)
+    public ResponseEntity<ProductDto> updateProduct (@PathVariable UUID id,
+                                                     @RequestBody ProductUpdateRequest request,
+                                                     @RequestPart (value = "newImages", required = false) List<MultipartFile> newImages)
             throws Exception {
-        return ResponseEntity.ok(productService.updateProduct(id,request));
+        return ResponseEntity.ok(productService.updateProduct(id,request, newImages));
     }
 
     @PutMapping("/{id}/status")
@@ -102,6 +111,4 @@ public class ProductController {
         productService.deleteProduct(id);
         return ResponseEntity.ok("Delete successfullt product id " + id);
     }
-
-
 }
