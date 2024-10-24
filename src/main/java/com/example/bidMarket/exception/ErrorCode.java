@@ -54,6 +54,7 @@ public enum ErrorCode {
     BID_CREATION_FAILED(6004, "Failed to place bid"),
     BID_UPDATE_FAILED(6005, "Failed to update bid"),
     BID_IS_REJECTED(6006, "Bid is rejected because the auction is not open"),
+    MAX_BID_TOO_LOW(6007, "Max bid is lower than the current highest bid"),
 
     // Profile-related errors (7xxx)
     PROFILE_NOT_FOUND(7001, "Profile not found"),

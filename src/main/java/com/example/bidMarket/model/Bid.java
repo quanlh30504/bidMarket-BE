@@ -33,6 +33,9 @@ public class Bid {
     @Column(name = "bid_amount")
     private BigDecimal bidAmount;
 
+    @Column(name = "max_bid")
+    private BigDecimal maxBid;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private BidStatus status;
