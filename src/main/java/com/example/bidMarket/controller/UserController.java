@@ -7,6 +7,8 @@ import com.example.bidMarket.dto.Request.RegisterRequest;
 import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
 import com.example.bidMarket.dto.Response.RegisterResponse;
 import com.example.bidMarket.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,19 +32,21 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<RegisterResponse> register(
-            @ModelAttribute @Valid RegisterRequest registerRequest,
-//            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-            @RequestPart(value = "frontImage", required = false) MultipartFile frontImage,
-            @RequestPart(value = "backImage", required = false) MultipartFile backImage) throws Exception {
-
+    @PostMapping(value = "/signup")
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest, HttpServletResponse response) throws Exception {
         logger.info("Start sign up for user: {}", registerRequest.getEmail());
-
-//        registerRequest.setProfileImage(profileImage);
-
         RegisterResponse registerResponse = userService.createUser(registerRequest);
+        createAuthCookies(response, registerResponse.getRefreshToken());
         return ResponseEntity.ok(registerResponse);
+    }
+
+    private void createAuthCookies(HttpServletResponse response, String refreshToken) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+        response.addCookie(refreshTokenCookie);
     }
 
     @PostMapping("/signin")
@@ -106,5 +110,4 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok().build();
     }
-
 }

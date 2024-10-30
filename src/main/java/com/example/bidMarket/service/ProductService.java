@@ -16,9 +16,9 @@ import java.util.UUID;
 public interface ProductService {
     public ProductDto getProduct(UUID id) throws Exception;
     public List<ProductDto> getAllProduct();
-    Product createProduct(ProductCreateRequest request, List<MultipartFile> images) throws Exception;
+    Product createProduct(ProductCreateRequest request) throws Exception;
     public void deleteProduct(UUID productId);
-    public ProductDto updateProduct(UUID id, ProductUpdateRequest request, List<MultipartFile> newImages) throws Exception;
+    public ProductDto updateProduct(UUID id, ProductUpdateRequest request);
     public ProductDto updateStatus(UUID id, ProductStatus status) throws Exception;
     public Page<Product> searchProducts(String name, CategoryType categoryType, ProductStatus status,
                                         int page, int size, String sortField, Sort.Direction sortDirection);

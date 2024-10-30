@@ -85,16 +85,15 @@ public class AuctionServiceImpl implements AuctionService {
     @Override
     @Transactional
     public AuctionDto createAuction(AuctionCreateRequest auctionCreateRequest) throws Exception {
-        // Tạo Product entity từ DTO
-//        Product product = productService.createProduct(auctionCreateRequest.getProductCreateRequest());
-//
-//        // Tạo phiên đấu giá từ DTO và product đã được lưu
-//        Auction auction = auctionMapper.auctionCreateToAuction(auctionCreateRequest, product);
-//        auction = auctionRepository.save(auction);
-//
-//        AuctionDto auctionDto = auctionMapper.auctionToAuctionDto(auction);
-//        return auctionDto;
-        return null;
+//         Tạo Product entity từ DTO
+        Product product = productService.createProduct(auctionCreateRequest.getProductCreateRequest());
+
+        // Tạo phiên đấu giá từ DTO và product đã được lưu
+        Auction auction = auctionMapper.auctionCreateToAuction(auctionCreateRequest, product);
+        auction = auctionRepository.save(auction);
+
+        AuctionDto auctionDto = auctionMapper.auctionToAuctionDto(auction);
+        return auctionDto;
     }
 
     @Override
@@ -126,9 +125,7 @@ public class AuctionServiceImpl implements AuctionService {
         auction.setStartingPrice(request.getStartingPrice());
         auction.setCurrentPrice(request.getStartingPrice());
         auction.setMinimumBidIncrement(request.getMinimumBidIncrement());
-
-        //temporary
-//        productService.updateProduct(auction.getProduct().getId(), request.getProductUpdateRequest());
+        productService.updateProduct(auction.getProduct().getId(), request.getProductUpdateRequest());
 
         auction = auctionRepository.save(auction);
         return auction;
@@ -227,8 +224,4 @@ public class AuctionServiceImpl implements AuctionService {
             throw new AppException(ErrorCode.AUCTION_COMPLETE_FAILED);
         }
     }
-
-
-
-
 }

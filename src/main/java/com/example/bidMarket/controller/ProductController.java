@@ -69,35 +69,17 @@ public class ProductController {
         );
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createProduct(
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("sellerId") UUID sellerId,
-            @RequestParam("stockQuantity") Integer stockQuantity,
-            @RequestParam("categories") Set<CategoryType> categories,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
-
-        ProductCreateRequest request = new ProductCreateRequest();
-        request.setName(name);
-        request.setDescription(description);
-        request.setSellerId(sellerId);
-        request.setStockQuantity(stockQuantity);
-        request.setCategories(categories);
-
+    @PostMapping
+    public ResponseEntity<?> createProduct(@Valid @RequestBody ProductCreateRequest request) throws Exception {
         logger.info("Received request to create product: {}", request);
-        logger.info("Number of images: {}", images != null ? images.size() : 0);
-
-        Product createdProduct = productService.createProduct(request, images);
+        Product createdProduct = productService.createProduct(request);
         return ResponseEntity.ok(productMapper.productToProductDto(createdProduct));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct (@PathVariable UUID id,
-                                                     @RequestBody ProductUpdateRequest request,
-                                                     @RequestPart (value = "newImages", required = false) List<MultipartFile> newImages)
-            throws Exception {
-        return ResponseEntity.ok(productService.updateProduct(id,request, newImages));
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable UUID id,
+                                                    @Valid @RequestBody ProductUpdateRequest request) throws Exception {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
     @PutMapping("/{id}/status")

@@ -1,5 +1,5 @@
 package com.example.bidMarket.Enum;
 
 public enum MessageType {
-    TEXT, IMAGE, VIDEO, FILE
+    TEXT, IMAGE, VIDEO, FILE, AUDIO
 }

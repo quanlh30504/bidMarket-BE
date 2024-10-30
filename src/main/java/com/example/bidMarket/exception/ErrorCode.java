@@ -10,6 +10,7 @@ public enum ErrorCode {
     USER_UNAUTHORIZED(1006, "User unauthorized"),
     USER_ACCOUNT_LOCKED(1007, "User account is locked"),
     USER_ROLE_INVALID(1008, "Invalid user role"),
+    EMAIL_ALREADY_EXIST(1009, "Email already exists"),
 
     // Validation errors (2xxx)
     INVALID_REQUEST(2001, "Invalid request format"),

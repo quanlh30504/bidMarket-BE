@@ -19,8 +19,7 @@ public class ProductUpdateRequest {
 
     private List<ProductImageDto> productImages;
     private Set<CategoryType> categories;
-
-    private List<MultipartFile> newImages;
+    private List<String> newImages;
 
     public boolean hasNewImages() {
         return newImages != null && newImages.isEmpty();

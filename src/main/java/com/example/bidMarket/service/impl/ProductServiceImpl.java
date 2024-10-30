@@ -68,25 +68,24 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product createProduct(ProductCreateRequest request, List<MultipartFile> images) throws Exception {
+    public Product createProduct(ProductCreateRequest request) throws Exception {
         Product product = productMapper.productCreateToProduct(request);
 
-        // Save product to get its Id
+        // Save product to get its id
         product = productRepository.save(product);
 
-        // Lưu hình ảnh sản phẩm
-        if (images != null && !images.isEmpty()) {
-            List<String> imageUrls = imageService.uploadProductImages(product.getId(), images);
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             List<ProductImage> productImages = new ArrayList<>();
-            for (int i = 0; i < imageUrls.size(); i++) {
+            for (int i = 0; i < request.getImageUrls().size(); i++) {
                 ProductImage productImage = new ProductImage();
-                productImage.setImageUrl(imageUrls.get(i));
+                productImage.setImageUrl(request.getImageUrls().get(i));
                 productImage.setPrimary(i == 0);
                 productImage.setProduct(product);
                 productImages.add(productImage);
             }
             product.setProductImages(productImages);
         }
+
         return productRepository.save(product);
     }
 
@@ -131,18 +130,19 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductDto updateProduct(UUID id, ProductUpdateRequest request, List<MultipartFile> newImages) {
+    public ProductDto updateProduct(UUID id, ProductUpdateRequest request) {
         log.info("Updating product with id: {}", id);
 
         Product product = findProductById(id);
         validateProductStatus(product);
 
         updateBasicInfo(product, request);
-        updateImages(product, newImages);
+        updateImages(product, request.getNewImages());
+        updateCategories(product, request.getCategories());
 
         Product updatedProduct = productRepository.save(product);
         log.info("Successfully updated product with id: {}", id);
-        return productMapper.productToProductDto(productRepository.save(product));
+        return productMapper.productToProductDto(updatedProduct);
     }
 
     private void updateBasicInfo(Product product, ProductUpdateRequest request) {
@@ -180,30 +180,17 @@ public class ProductServiceImpl implements ProductService {
             currentCategories.addAll(newCategories);
         }
     }
-    private void updateImages(Product product, List<MultipartFile> newImages) {
-        if (newImages != null && !newImages.isEmpty()) {
+    private void updateImages(Product product, List<String> newImageUrls) {
+        if (newImageUrls != null && !newImageUrls.isEmpty()) {
             List<ProductImage> currentImages = product.getProductImages();
-
-            currentImages.forEach(image -> {
-                try {
-                    amazonS3Service.deleteFile(image.getImageUrl());
-                } catch (Exception e) {
-                    log.error("Failed to delete image from S3: {}", image.getImageUrl(), e);
-                }
-            });
             currentImages.clear();
 
-            try {
-                List<String> newImageUrls = imageService.uploadProductImages(product.getId(), newImages);
-                newImageUrls.forEach(url -> {
-                    ProductImage newImage = new ProductImage();
-                    newImage.setImageUrl(url);
-                    newImage.setProduct(product);
-                    currentImages.add(newImage);
-                });
-            } catch (Exception e) {
-                log.error("Failed to upload image from S3: {}", product.getId(), e);
-                throw new AppException(ErrorCode.PRODUCT_UPDATE_FAILED);
+            for (int i = 0; i < newImageUrls.size(); i++) {
+                ProductImage newImage = new ProductImage();
+                newImage.setImageUrl(newImageUrls.get(i));
+                newImage.setPrimary(i == 0);
+                newImage.setProduct(product);
+                currentImages.add(newImage);
             }
         } else {
             log.info("No new images provided for product ID: {}", product.getId());

@@ -30,15 +30,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -55,78 +51,49 @@ public class UserServiceImpl implements UserService {
     private final RegisterMapper registerMapper;
     private final ProfileRepository profileRepository;
     private final IdCardRepository idCardRepository;
-    private final ImageService imageService;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-    private final AmazonS3Service amazonS3Service;
 
     @Override
     @Transactional
     public RegisterResponse createUser(RegisterRequest registerRequest) throws Exception{
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            throw new Exception("Email existed");
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXIST);
         }
 
-        // Create user
         User user = registerMapper.requestToUser(registerRequest);
         user = userRepository.save(user);
 
-        // Create profile
         Profile profile = registerMapper.requestToProfile(user, registerRequest);
-
-//        // Handle profile image upload
-//        MultipartFile profileImage = registerRequest.getProfileImage();
-//        if (profileImage != null && !profileImage.isEmpty()) {
-//            try {
-//                String profileImageUrl = imageService.uploadImage(profileImage, "users");
-//                profile.setProfileImageUrl(profileImageUrl);
-//                log.info("Success upload image");
-//            } catch (IOException e) {
-//                log.error("Error while uploading profile image", e);
-//                profile.setProfileImageUrl(amazonS3Service.getDefaultUrl("users"));
-//            }
-//        } else {
-//            profile.setProfileImageUrl(amazonS3Service.getDefaultUrl("users"));
-//        }
-
         profile = profileRepository.save(profile);
         user.setProfile(profile);
 
         // Handle seller information
         if (user.getRole() == Role.SELLER) {
             IdCard idCard = registerMapper.requestToIdCard(user, registerRequest);
-
-            // Handle front and back image upload
-            MultipartFile frontImage = registerRequest.getFrontImage();
-            if (frontImage != null && !frontImage.isEmpty()) {
-                try {
-                    String frontImageUrl = imageService.uploadImage(frontImage, "id-cards");
-                    idCard.setFrontImageURL(frontImageUrl);
-                } catch (IOException e) {
-                    log.error("Error while uploading front Id card image for user: {}", user.getEmail(), e);
-                    throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
-                }
-            } else {
-                log.warn("Front Image id card is empty");
-            }
-
-            MultipartFile backImage = registerRequest.getBackImage();
-            if (backImage != null && !backImage.isEmpty()) {
-                try {
-                    String backImageUrl = imageService.uploadImage(backImage, "id-cards");
-                    idCard.setBackImageURL(backImageUrl);
-                } catch (IOException e) {
-                    throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
-                }
-            } else {
-                log.warn("Back Image id card is empty");
-            }
-
+            idCard.setFrontImageURL(registerRequest.getFrontImageURL());
+            idCard.setBackImageURL(registerRequest.getBackImageURL());
             idCard = idCardRepository.save(idCard);
             user.setIdCard(idCard);
         }
 
         user = userRepository.save(user);
-        return registerMapper.toRegisterResponse(user);
+
+        AuthenticationManager authenticationManager = applicationContext.getBean(AuthenticationManager.class);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(registerRequest.getEmail(), registerRequest.getPassword())
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String jwt = tokenProvider.generateToken(authentication);
+        String refreshToken = tokenProvider.generateRefreshToken(authentication);
+
+        return RegisterResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .jwt(jwt)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     @Override

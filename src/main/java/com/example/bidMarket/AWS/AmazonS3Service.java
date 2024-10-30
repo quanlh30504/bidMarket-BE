@@ -1,10 +1,13 @@
 package com.example.bidMarket.AWS;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.example.bidMarket.dto.Response.PreSignedUrlResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
@@ -33,8 +38,35 @@ public class AmazonS3Service {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
+    public PreSignedUrlResponse generatePreSignedUrl(String folder, String fileType) {
+        try {
+            String fileName = generateFileName(fileType);
+            String s3Key = folder + "/" + fileName;
+
+            Date expiration = new Date();
+            long expTimeMillis = expiration.getTime();
+            expTimeMillis += 1000 * 60 * 5; // 5 minutes
+            expiration.setTime(expTimeMillis);
+
+            GeneratePresignedUrlRequest generatePresignedUrlRequest =
+                    new GeneratePresignedUrlRequest(bucketName, s3Key)
+                            .withMethod(HttpMethod.PUT)
+                            .withExpiration(expiration)
+                            .withContentType(fileType);
+
+            URL preSignedUrl = amazonS3Client.generatePresignedUrl(generatePresignedUrlRequest);
+
+            String finalUrl = getFileUrl(s3Key);
+            log.info("PreSignedUrlResponse: uploadUrl={}, fileUrl={}", preSignedUrl.toString(), finalUrl);
+            return new PreSignedUrlResponse(preSignedUrl.toString(), finalUrl);
+        } catch (AmazonServiceException e) {
+            log.error("Error generating pre-signed URL: {}", e.getMessage());
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
     public String uploadFile(MultipartFile file, String folder) {
-        String fileName = generateFileName(file);
+        String fileName = generateFileName(String.valueOf(file));
         String s3Key = folder + "/" + fileName;
 
         try {
@@ -92,8 +124,9 @@ public class AmazonS3Service {
         }
     }
 
-    private String generateFileName(MultipartFile file) {
-        return UUID.randomUUID().toString() + "-" + file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_");
+    private String generateFileName(String contentType) {
+        String extension = contentType.substring(contentType.lastIndexOf('/') + 1);
+        return UUID.randomUUID().toString() + "." + extension;
     }
 
     private String extractS3KeyFromUrl(String fileUrl) {
