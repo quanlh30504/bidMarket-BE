@@ -3,6 +3,7 @@ package com.example.bidMarket.controller;
 import com.example.bidMarket.KafkaService.BidProducer;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
 import com.example.bidMarket.dto.Request.AutoPlaceBidRequest;
+import com.example.bidMarket.model.Bid;
 import com.example.bidMarket.service.BidService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,27 +24,29 @@ public class BidController {
         return ResponseEntity.ok("Send bid to kafka sucessfully");
     }
 
+//    @PostMapping("/placeBid")
+//    public ResponseEntity<?> placeBid(@RequestBody Object bidRequest) {
+//        if (bidRequest instanceof AutoPlaceBidRequest autoPlaceBidRequest) {
+//            if (autoPlaceBidRequest.isAuto()) {
+//                bidService.autoPlaceBid(autoPlaceBidRequest);
+//            }
+//        } else if (bidRequest instanceof BidCreateRequest createRequest) {
+//            bidService.createBid(createRequest);
+//        }
+//        return ResponseEntity.ok("Bid placed successfully");
+//    }
     @PostMapping("/placeBid")
-    public ResponseEntity<String> autoPlaceBid(@RequestBody AutoPlaceBidRequest request) {
-        bidService.autoPlaceBid(request);
+    public ResponseEntity<String> placeBid(@RequestBody BidCreateRequest bidCreateRequest) {
+        if (bidCreateRequest.isAuto()) {
+            bidService.autoPlaceBid(bidCreateRequest); // Gọi service đặt giá tự động
+        } else if (!bidCreateRequest.isAuto()) {
+            bidService.createBid(bidCreateRequest); // Gọi service đặt giá thủ công
+        } else {
+            throw new IllegalArgumentException("Request invalid!!!");
+        }
         return ResponseEntity.ok("Bid placed successfully");
     }
-
-//    @PostMapping("/placeBid")
-//    public ResponseEntity<?> placeBid(@RequestBody AutoPlaceBidRequest autoPlaceBidRequest) {
-//        if (autoPlaceBidRequest.isAutoBid() && autoPlaceBidRequest.getMaxBid() != null) {
-//            bidService.autoPlaceBid(autoPlaceBidRequest);
-//        } if (!autoPlaceBidRequest.isAutoBid() && autoPlaceBidRequest.getMaxBid() == null) {
-//            BidCreateRequest bidCreateRequest = new BidCreateRequest();
-//            bidCreateRequest.setAuctionId(autoPlaceBidRequest.getAuctionId());
-//            bidCreateRequest.setUserId(autoPlaceBidRequest.getUserId());
-//            bidCreateRequest.setBidAmount(autoPlaceBidRequest.getBidAmount());
-//            bidService.createBid(bidCreateRequest);
-//
-//            if (autoPlaceBidRequest.getMaxBid() != null) {
-//                autoPlaceBidRequest.setAutoBid(true);
-//            }
-//        }
-//        return ResponseEntity.ok("Bid processed successfully");
-//    }
 }
+
+
+

@@ -20,6 +20,6 @@ public interface BidService {
 
     Page<BidDto> getBidsOfAuction(UUID auctionId, int page, int size, BidStatus status, String sortField, Sort.Direction direction);
 
-    void autoPlaceBid(AutoPlaceBidRequest request);
+    void autoPlaceBid(BidCreateRequest request);
 
 }

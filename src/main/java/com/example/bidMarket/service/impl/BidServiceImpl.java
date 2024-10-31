@@ -51,6 +51,7 @@ public class BidServiceImpl implements BidService {
                 .userId(bidCreateRequest.getUserId())
                 .auction(auction)
                 .bidAmount(bidCreateRequest.getBidAmount())
+                .maxBid(null)
                 .status(BidStatus.PENDING)
                 .build();
         return BidCreateResponse.builder()
@@ -132,62 +133,59 @@ public class BidServiceImpl implements BidService {
 
     @Override
     @Transactional
-    public void autoPlaceBid(AutoPlaceBidRequest autoPlaceBidRequest) {
-        Auction auction = auctionRepository.findById(autoPlaceBidRequest.getAuctionId())
+    public void autoPlaceBid(BidCreateRequest bidCreateRequest) {
+        Auction auction = auctionRepository.findById(bidCreateRequest.getAuctionId())
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
 
-        // Nếu maxBid null hoặc người dùng không chọn chế độ tự động hoặc maxBid <= BidAmount (lần đầu)
-        if (autoPlaceBidRequest.getMaxBid() == null || !autoPlaceBidRequest.isAutoBid()
-                || autoPlaceBidRequest.getMaxBid().compareTo(autoPlaceBidRequest.getBidAmount()) <= 0) {
+        Bid highestBid = bidRepository.findHighestBidByAuctionId(auction.getId());
 
-            // Khi người dùng muốn đặt giá thủ công lượt này
-            if (autoPlaceBidRequest.getMaxBid() != null &&
-                    autoPlaceBidRequest.getMaxBid().compareTo(autoPlaceBidRequest.getBidAmount()) > 0) {
-                autoPlaceBidRequest.setAutoBid(true);
-                // Check nếu ra giá < giá cao nhất -> lỗi
-                Bid highestBid = bidRepository.findHighestBidByAuctionId(autoPlaceBidRequest.getAuctionId());
-
-                if (highestBid != null && autoPlaceBidRequest.getBidAmount().compareTo(highestBid.getBidAmount()) <= 0) {
-                    throw new AppException(ErrorCode.BID_TOO_LOW);
-                }
-            }
-
-            Bid newBid = Bid.builder()
-                    .auction(auction)
-                    .userId(autoPlaceBidRequest.getUserId())
-                    .bidAmount(autoPlaceBidRequest.getBidAmount())
-                    .maxBid(autoPlaceBidRequest.getMaxBid())
-                    .build();
-            bidRepository.save(newBid);
-
-
-            return;
+        // Người đầu tiên đặt giá -> bắt buộc phải đặt giá thủ công
+        if (highestBid == null) {
+            throw new AppException(ErrorCode.FIRST_BID_MANUAL);
         }
 
-        // Khi maxBid có, MaxBid phải > BidAmount
-        if (autoPlaceBidRequest.getMaxBid().compareTo(autoPlaceBidRequest.getBidAmount()) <= 0) {
+        // Lấy maxBid từ request hoặc từ DB -> giải quyết được vấn đề lưu lại maxBid sau mỗi lần tự động đặt giá
+        BigDecimal maxBid = bidCreateRequest.getMaxBid() != null ? bidCreateRequest.getMaxBid()
+                :auctionRepository.findMaxBidByUserAndAuction(bidCreateRequest.getUserId(), bidCreateRequest.getAuctionId());
+
+        //  MaxBid < HighestBid -> báo lỗi để người dùng chọn lại Auto hay không
+        if (highestBid.getBidAmount().compareTo(maxBid) >= 0) {
+            throw new AppException(ErrorCode.MAX_BID_EXCEEDED);
+        }
+        // MaxBid phải > BidAmount
+        if (maxBid.compareTo(highestBid.getBidAmount()) <= 0) {
             throw new AppException(ErrorCode.MAX_BID_TOO_LOW);
         }
 
-        if (autoPlaceBidRequest.isAutoBid()) {
-            checkAndPlaceAutoBid(auction, autoPlaceBidRequest.getUserId(), autoPlaceBidRequest.getMaxBid());
-        }
+        checkAndPlaceAutoBid(auction, bidCreateRequest.getUserId(), maxBid, bidCreateRequest.getIncreAmount());
     }
 
-    private void checkAndPlaceAutoBid(Auction auction, UUID userId, BigDecimal maxBid) {
+    private void checkAndPlaceAutoBid(Auction auction, UUID userId, BigDecimal maxBid, BigDecimal increAmount) {
         Bid highestBid = bidRepository.findHighestBidByAuctionId(auction.getId());
 
         if (highestBid != null && highestBid.getUserId().equals(userId)) {
             return;
         }
 
-        BigDecimal newBidAmount = highestBid.getBidAmount().add(new BigDecimal("10.00")); // Tăng thêm 10
+        BigDecimal newBidAmount = highestBid.getBidAmount().add(increAmount); // Tăng thêm increAmount
+
+        // Nếu newBidAmount <= maxBid -> đặt giá mới
         if (newBidAmount.compareTo(maxBid) <= 0) {
             Bid autoBid = Bid.builder()
                     .auction(auction)
                     .userId(userId)
                     .bidAmount(newBidAmount)
                     .maxBid(maxBid)
+                    .status(BidStatus.PENDING)
+                    .build();
+            bidRepository.save(autoBid);
+        } else {    // Nếu newBidAmount > maxBid -> đặt giá maxBid luôn
+            Bid autoBid = Bid.builder()
+                    .auction(auction)
+                    .userId(userId)
+                    .bidAmount(maxBid)
+                    .maxBid(maxBid)
+                    .status(BidStatus.PENDING)
                     .build();
             bidRepository.save(autoBid);
         }

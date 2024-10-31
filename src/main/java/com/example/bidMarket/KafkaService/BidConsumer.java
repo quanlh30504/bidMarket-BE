@@ -18,6 +18,5 @@ public class BidConsumer {
     public void listenBidRequest(BidCreateRequest bidRequest){
         log.info("processing bid in auction id " + bidRequest.getAuctionId());
         bidService.processBid(bidRequest);
-
     }
 }

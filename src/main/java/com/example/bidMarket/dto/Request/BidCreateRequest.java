@@ -15,6 +15,9 @@ import java.util.UUID;
 public class BidCreateRequest {
     private UUID userId;
     private UUID auctionId;
+    private boolean isAuto;
     private BigDecimal bidAmount;
+    private BigDecimal maxBid;
+    private BigDecimal increAmount;
     private LocalDateTime bidTime;
 }
