@@ -3,7 +3,6 @@ package com.example.bidMarket.service;
 import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
-import com.example.bidMarket.dto.Request.AutoPlaceBidRequest;
 import com.example.bidMarket.dto.Response.BidCreateResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;

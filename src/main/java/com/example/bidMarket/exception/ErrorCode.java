@@ -57,6 +57,7 @@ public enum ErrorCode {
     MAX_BID_TOO_LOW(6007, "Max bid is lower than the current highest bid"),
     MAX_BID_EXCEEDED(6008, "Max bid exceeds the current highest bid"),
     FIRST_BID_MANUAL(6009, "First bid must be manual"),
+    BID_INCREAMOUNT_TOO_LOW(6010, "Bid increment amount must be greater than the minimum bid increment"),
 
     // Profile-related errors (7xxx)
     PROFILE_NOT_FOUND(7001, "Profile not found"),

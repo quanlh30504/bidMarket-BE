@@ -1,9 +1,9 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
-import com.example.bidMarket.dto.Request.AutoPlaceBidRequest;
 import com.example.bidMarket.dto.Response.BidCreateResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
@@ -139,6 +139,11 @@ public class BidServiceImpl implements BidService {
 
         Bid highestBid = bidRepository.findHighestBidByAuctionId(auction.getId());
 
+        // Kiểm tra xem phiên đấu giá đã kết thúc chưa
+        if (AuctionStatus.CLOSED.equals(auction.getStatus())) {
+            throw new AppException(ErrorCode.AUCTION_ALREADY_CLOSED);
+        }
+
         // Người đầu tiên đặt giá -> bắt buộc phải đặt giá thủ công
         if (highestBid == null) {
             throw new AppException(ErrorCode.FIRST_BID_MANUAL);
@@ -157,6 +162,10 @@ public class BidServiceImpl implements BidService {
             throw new AppException(ErrorCode.MAX_BID_TOO_LOW);
         }
 
+        // Giá tự động phải cao hơn giá hiện tại ít nhất là minimumBidIncrement
+        if (auction.getMinimumBidIncrement().compareTo(bidCreateRequest.getIncreAmount()) > 0) {
+            throw new AppException(ErrorCode.BID_INCREAMOUNT_TOO_LOW);
+        }
         checkAndPlaceAutoBid(auction, bidCreateRequest.getUserId(), maxBid, bidCreateRequest.getIncreAmount());
     }
 

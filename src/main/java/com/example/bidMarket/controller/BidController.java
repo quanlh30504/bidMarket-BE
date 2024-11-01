@@ -2,7 +2,6 @@ package com.example.bidMarket.controller;
 
 import com.example.bidMarket.KafkaService.BidProducer;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
-import com.example.bidMarket.dto.Request.AutoPlaceBidRequest;
 import com.example.bidMarket.model.Bid;
 import com.example.bidMarket.service.BidService;
 import lombok.RequiredArgsConstructor;
