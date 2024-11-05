@@ -18,8 +18,9 @@ public class RegisterRequest {
 
     // Only apply if role is SELLER
     private String idCard;
-    private MultipartFile frontImage;
-    private MultipartFile backImage;
+    private String frontImageURL;
+    private String backImageURL;
+
     private LocalDate issuedDate;
     private LocalDate expirationDate;
 }

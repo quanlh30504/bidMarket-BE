@@ -275,29 +275,3 @@ public class AuctionServiceImpl implements AuctionService {
 
 
 }
-
-/*
-
-tôi cần tư vấn logic việc cancel của 1 auction, khi đó tôi đang áp dụng việc sẽ chuyển status của các order được tạo ra từ auction như code dưới, 1 order có các status là peding, paid, completed, cancel. Tuy nhiên logic xử lí order có thể còn xót và chưa tối ưu, hãy phân tích và cho giải pháp :
-    public void cancelAuction(UUID id) {
-        Auction auction = auctionRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
-        if (auction.getStatus() != AuctionStatus.COMPLETED){
-            auction.setStatus(AuctionStatus.CANCELED);
-            Product product = auction.getProduct();
-            product.setStatus(ProductStatus.INACTIVE);
-
-            // Cancel order
-            Optional<Order> order = orderRepository.findByAuctionId(auction.getId());
-            if (order.isPresent() && order.get().getStatus() == OrderStatus.PENDING) {
-                Order orderValue = order.get();
-                orderValue.setStatus(OrderStatus.CANCELED);
-                orderRepository.save(orderValue);
-            }
-            auctionRepository.save(auction);
-            productRepository.save(product);
-        }else {
-            throw new AppException(ErrorCode.AUCTION_CANCEL_FAILED);
-        }
-    }
- */

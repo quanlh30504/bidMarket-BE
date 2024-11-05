@@ -9,6 +9,8 @@ import com.example.bidMarket.dto.Response.RegisterResponse;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import com.example.bidMarket.service.VerifyEmailService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -38,24 +40,22 @@ public class UserController {
         this.verifyEmailService = verifyEmailService;
     }
 
-    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<RegisterResponse> register(
-            @ModelAttribute @Valid RegisterRequest registerRequest,
-//            @RequestPart(value = "profileImageUrl", required = false) MultipartFile profileImageUrl
-            @RequestPart(value = "frontImage", required = false) MultipartFile frontImage,
-            @RequestPart(value = "backImage", required = false) MultipartFile backImage) throws Exception {
-
+    @PostMapping(value = "/signup")
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest, HttpServletResponse response) throws Exception {
         logger.info("Start sign up for user: {}", registerRequest.getEmail());
-//        registerRequest.setProfileImageUrl(profileImageUrl);
-
         RegisterResponse registerResponse = userService.createUser(registerRequest);
+        createAuthCookies(response, registerResponse.getRefreshToken());
         verifyEmailService.verifyEmailRegister(registerRequest.getEmail());
         return ResponseEntity.ok(registerResponse);
     }
 
-    @PostMapping("/signup/verifyEmail/{otp}/{email}")
-    public ResponseEntity<String> verifyEmail(@PathVariable Integer otp, @PathVariable String email) {
-        return verifyEmailService.verifyOtpRegister(otp, email);
+    private void createAuthCookies(HttpServletResponse response, String refreshToken) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+        response.addCookie(refreshTokenCookie);
     }
 
     @PostMapping("/signin")

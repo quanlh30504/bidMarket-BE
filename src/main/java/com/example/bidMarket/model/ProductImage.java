@@ -30,7 +30,7 @@ public class ProductImage {
     private LocalDateTime createdAt;
 
     @PrePersist
-    public void prePersist() {
+    public void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
 }

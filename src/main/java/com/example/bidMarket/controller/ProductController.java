@@ -9,14 +9,20 @@ import com.example.bidMarket.dto.Request.ProductUpdateRequest;
 import com.example.bidMarket.mapper.ProductMapper;
 import com.example.bidMarket.model.Product;
 import com.example.bidMarket.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -27,6 +33,7 @@ public class ProductController {
     private final ProductService productService;
     private final ProductMapper productMapper;
 
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
     @GetMapping("/{id}")
     public ResponseEntity<ProductDto> getProduct(@PathVariable UUID id) throws Exception {
         return ResponseEntity.ok(productService.getProduct(id));
@@ -63,15 +70,16 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductCreateRequest request) throws Exception {
-        return ResponseEntity.ok(productMapper.productToProductDto(productService.createProduct(request)));
-
+    public ResponseEntity<?> createProduct(@Valid @RequestBody ProductCreateRequest request) throws Exception {
+        logger.info("Received request to create product: {}", request);
+        Product createdProduct = productService.createProduct(request);
+        return ResponseEntity.ok(productMapper.productToProductDto(createdProduct));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct (@PathVariable UUID id, @RequestBody ProductUpdateRequest request)
-            throws Exception {
-        return ResponseEntity.ok(productService.updateProduct(id,request));
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable UUID id,
+                                                    @Valid @RequestBody ProductUpdateRequest request) throws Exception {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
     @PutMapping("/{id}/status")
@@ -85,6 +93,4 @@ public class ProductController {
         productService.deleteProduct(id);
         return ResponseEntity.ok("Delete successfullt product id " + id);
     }
-
-
 }
