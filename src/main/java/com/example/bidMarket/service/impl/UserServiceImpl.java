@@ -30,11 +30,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -52,6 +56,8 @@ public class UserServiceImpl implements UserService {
     private final ProfileRepository profileRepository;
     private final IdCardRepository idCardRepository;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    private final AmazonS3Service amazonS3Service;
 
     @Override
     @Transactional

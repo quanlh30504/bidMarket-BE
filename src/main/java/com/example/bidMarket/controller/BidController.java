@@ -21,12 +21,8 @@ public class BidController {
 
     @PostMapping
     public ResponseEntity<?> placeBid(@RequestBody BidCreateRequest bidCreateRequest) {
-        try {
-            bidProducer.sendBidRequest(bidCreateRequest);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return ResponseEntity.ok("Successful");
+        bidProducer.sendBidRequest(bidCreateRequest);
+        return ResponseEntity.ok("Send bid to kafka sucessfully");
     }
 
 }

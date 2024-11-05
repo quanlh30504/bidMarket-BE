@@ -1,5 +1,8 @@
 package com.example.bidMarket.service.impl;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.bidMarket.AWS.AmazonS3Service;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
@@ -10,6 +13,7 @@ import com.example.bidMarket.repository.ProfileRepository;
 import com.example.bidMarket.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
