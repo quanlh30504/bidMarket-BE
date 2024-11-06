@@ -84,15 +84,15 @@ public class UserServiceImpl implements UserService {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.generateToken(authentication);
-        String refreshToken = tokenProvider.generateRefreshToken(authentication);
+//        String jwt = tokenProvider.generateToken(authentication);
+//        String refreshToken = tokenProvider.generateRefreshToken(authentication);
 
         return RegisterResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .role(user.getRole())
-                .jwt(jwt)
-                .refreshToken(refreshToken)
+//                .jwt(jwt)
+//                .refreshToken(refreshToken)
                 .build();
     }
 

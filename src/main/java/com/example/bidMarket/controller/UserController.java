@@ -33,27 +33,19 @@ public class UserController {
     }
 
     @PostMapping(value = "/signup")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest, HttpServletResponse response) throws Exception {
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) throws Exception {
         logger.info("Start sign up for user: {}", registerRequest.getEmail());
         RegisterResponse registerResponse = userService.createUser(registerRequest);
-        createAuthCookies(response, registerResponse.getRefreshToken());
+//        createAuthCookies(cookieResponse, registerResponse.getRefreshToken());
         return ResponseEntity.ok(registerResponse);
     }
 
-    private void createAuthCookies(HttpServletResponse response, String refreshToken) {
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-        response.addCookie(refreshTokenCookie);
-    }
-
     @PostMapping("/signin")
-    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse cookieResponse) {
         logger.debug("Received signin request for user: {}", loginRequest.getEmail());
         try {
             JwtAuthenticationResponse response = userService.authenticateUser(loginRequest);
+            createAuthCookies(cookieResponse, response.getRefreshToken());
             logger.debug("Authen successful: {}", loginRequest.getEmail());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -62,10 +54,32 @@ public class UserController {
         }
     }
 
+    private void createAuthCookies(HttpServletResponse response, String refreshToken) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(false); // chưa có https
+        refreshTokenCookie.setPath("/api/users/refresh-token");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+//        refreshTokenCookie.setSameSite("None");
+        response.addCookie(refreshTokenCookie);
+    }
+
     @PostMapping("/refresh-token")
-    public ResponseEntity<JwtAuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-        JwtAuthenticationResponse response = userService.refreshToken(refreshTokenRequest);
+    public ResponseEntity<JwtAuthenticationResponse> refreshToken(@CookieValue("refreshToken") String refreshToken) {
+        JwtAuthenticationResponse response = userService.refreshToken(new RefreshTokenRequest(refreshToken));
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        // orther logic -> later
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(false);
+        refreshTokenCookie.setPath("/api/users/refresh-token");
+        response.addCookie(refreshTokenCookie);
+        return ResponseEntity.ok("Logged out successfully.");
     }
 
     @GetMapping("/{id}")
