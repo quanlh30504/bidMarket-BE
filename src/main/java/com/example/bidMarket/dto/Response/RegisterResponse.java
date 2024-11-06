@@ -18,6 +18,6 @@ public class RegisterResponse {
 
     private LocalDate issuedDate;
     private LocalDate expirationDate;
-    private String jwt;
-    private String refreshToken;
+//    private String jwt;
+//    private String refreshToken;
 }

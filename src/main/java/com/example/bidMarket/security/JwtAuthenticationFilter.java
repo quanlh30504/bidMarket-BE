@@ -41,10 +41,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
-            String jwt = getJwtFromRequest(request);
-            logger.info("extracted jwt: {}", jwt);
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                UUID username = tokenProvider.getUserIdFromToken(jwt);
+            String accessToken = getJwtFromRequest(request);
+            logger.info("extracted access token: {}", accessToken);
+            if (StringUtils.hasText(accessToken) && tokenProvider.validateToken(accessToken)) {
+                UUID username = tokenProvider.getUserIdFromToken(accessToken);
                 logger.debug("Username: {}", username);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username.toString());
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
