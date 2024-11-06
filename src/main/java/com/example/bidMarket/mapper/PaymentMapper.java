@@ -5,7 +5,9 @@ import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.model.Order;
 import com.example.bidMarket.model.Payment;
+import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.OrderRepository;
+import com.example.bidMarket.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,10 +19,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentMapper {
     public final OrderRepository orderRepository;
+    public final UserRepository userRepository;
     public static PaymentDto paymentToPaymentDto(Payment payment) {
         return PaymentDto.builder()
                 .id(payment.getId())
                 .orderId(payment.getOrder().getId())
+                .userId(payment.getUser().getId())
                 .transactionId(payment.getTransactionId())
                 .amount(payment.getAmount())
                 .paymentMethod(payment.getPaymentMethod())
@@ -33,8 +37,12 @@ public class PaymentMapper {
         Order order = orderRepository.findById(paymentDto.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
+        User user = userRepository.findById(paymentDto.getUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         return Payment.builder()
                 .order(order)
+                .user(user)
                 .transactionId(paymentDto.getTransactionId())
                 .amount(paymentDto.getAmount())
                 .paymentMethod(paymentDto.getPaymentMethod())

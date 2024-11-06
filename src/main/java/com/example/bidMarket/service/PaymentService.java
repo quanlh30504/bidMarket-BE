@@ -12,5 +12,5 @@ public interface PaymentService {
     public Payment createPayment(PaymentDto paymentDto);
     public PaymentDto processPayment(HttpServletRequest request);
 
-//    public Page<Payment> getPaymentsByUserId(UUID userId, int page, int size, String sortBy, String sortDirection);
+    public Page<Payment> getPaymentsByUserId(UUID userId, int page, int size, String sortBy, String sortDirection);
 }

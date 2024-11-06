@@ -24,26 +24,26 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-//    @GetMapping("/user/{userId}")
-//    public PaginatedResponse<PaymentDto> getOrdersByUserId(
-//            @PathVariable UUID userId,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size,
-//            @RequestParam(defaultValue = "createdAt") String sortBy,
-//            @RequestParam(defaultValue = "DESC") String sortDirection) {
-//        Page<Payment> payments = paymentService.getPaymentsByUserId(userId, page, size, sortBy, sortDirection);
-//        List<PaymentDto> content = payments.getContent().stream()
-//                .map(PaymentMapper::paymentToPaymentDto)
-//                .toList();
-//        return new PaginatedResponse<>(
-//                payments.getNumber(),
-//                payments.getSize(),
-//                payments.getTotalElements(),
-//                payments.getTotalPages(),
-//                payments.isLast(),
-//                payments.isFirst(),
-//                content
-//        );
-//    }
+    @GetMapping("/user/{userId}")
+    public PaginatedResponse<PaymentDto> getOrdersByUserId(
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+        Page<Payment> payments = paymentService.getPaymentsByUserId(userId, page, size, sortBy, sortDirection);
+        List<PaymentDto> content = payments.getContent().stream()
+                .map(PaymentMapper::paymentToPaymentDto)
+                .toList();
+        return new PaginatedResponse<>(
+                payments.getNumber(),
+                payments.getSize(),
+                payments.getTotalElements(),
+                payments.getTotalPages(),
+                payments.isLast(),
+                payments.isFirst(),
+                content
+        );
+    }
 
 }

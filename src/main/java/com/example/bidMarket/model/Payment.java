@@ -28,9 +28,9 @@ public class Payment {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "transaction_id", nullable = false, unique = true)
     private String transactionId;
@@ -51,7 +51,7 @@ public class Payment {
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;
 
-    @Column(name = "create_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist

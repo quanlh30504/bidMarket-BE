@@ -23,6 +23,6 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 //    )
 //    List<Payment> findByAuctionId(@Param("id") UUID id);
 
-//    Page<Payment> findAllByUserId(UUID userId, Pageable pageable);
+    Page<Payment> findAllByUserId(UUID userId, Pageable pageable);
 
 }
