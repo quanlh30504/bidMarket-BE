@@ -7,7 +7,6 @@ import com.example.bidMarket.repository.VerifyEmailRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.EmailService;
 import com.example.bidMarket.service.VerifyEmailService;
-import com.example.bidMarket.utils.ChangePassword;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +56,7 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
     }
 
     @Override
-    public ResponseEntity<String> verifyEmailRegister(String email) {
+    public ResponseEntity<String> verifyEmailAndSendOtp(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address" + email));
 
@@ -82,7 +81,7 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
     }
 
     @Override
-    public ResponseEntity<String> verifyOtpRegister(Integer otp, String email) {
+    public ResponseEntity<String> verifyOtp(Integer otp, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address"));
 
@@ -113,20 +112,6 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
 
         verifyEmailRepository.deleteById(fp.getId());
         return ResponseEntity.ok("OTP verified successfully");
-    }
-
-    @Override
-    public ResponseEntity<String> changePasswordHandler(ChangePassword changePassword, String email) {
-        if (!Objects.equals(changePassword.password(), changePassword.repeatPassword())) {
-            return new ResponseEntity<>("Passwords do not match", HttpStatus.BAD_REQUEST);
-        }
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address"));
-
-        userRepository.updatePassword(user, changePassword.password());
-
-        return ResponseEntity.ok("Password changed successfully");
     }
 
     private Integer otpGenerator() {
