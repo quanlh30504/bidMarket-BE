@@ -115,27 +115,5 @@ public class AuctionController {
         auctionService.reOpenAuction(id, auctionUpdateRequest);
         return ResponseEntity.ok("Reopen successfully auction " + id);
     }
-
-    @GetMapping("/{auctionId}/bids")
-    public PaginatedResponse<BidDto> getBidsHistoryOfAuction(
-            @PathVariable UUID auctionId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "VALID") BidStatus status,
-            @RequestParam(defaultValue = "bidTime") String sortField,
-            @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
-
-        Page<BidDto> bidDtos = bidService.getBidsOfAuction(auctionId, page, size,status, sortField, direction);
-        return new PaginatedResponse<>(
-                bidDtos.getNumber(),
-                bidDtos.getSize(),
-                bidDtos.getTotalElements(),
-                bidDtos.getTotalPages(),
-                bidDtos.isLast(),
-                bidDtos.isFirst(),
-                bidDtos.stream().toList()
-        );
-
-    }
 }
 

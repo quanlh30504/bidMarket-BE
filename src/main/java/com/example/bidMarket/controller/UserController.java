@@ -48,6 +48,7 @@ public class UserController {
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) throws Exception {
         logger.info("Start sign up for user: {}", registerRequest.getEmail());
         RegisterResponse registerResponse = userService.createUser(registerRequest);
+        verifyEmailService.sendOtp(registerRequest.getEmail());
         return ResponseEntity.ok(registerResponse);
     }
 

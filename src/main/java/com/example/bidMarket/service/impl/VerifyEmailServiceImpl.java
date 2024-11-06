@@ -31,32 +31,7 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
     private VerifyEmailRepository verifyEmailRepository;
 
     @Override
-    public ResponseEntity<String> verifyEmailForgotPassword(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address" + email));
-
-        verifyEmailRepository.findByUser(user).ifPresent(verifyEmailRepository::delete);
-
-        int otp = otpGenerator();
-        MailBody mailBody = MailBody.builder()
-                .to(email)
-                .subject("OTP for Forgot Password request")
-                .text("This is the OTP for your Forgot Password request: " + otp)
-                .build();
-
-        VerifyEmail fp = VerifyEmail.builder()
-                .otp(otp)
-                .expirationTime(new Date(System.currentTimeMillis() + 70 * 1000))
-                .user(user)
-                .build();
-
-        emailService.sendSimpleMessage(mailBody);
-        verifyEmailRepository.save(fp);
-        return ResponseEntity.ok("Email sent for verification");
-    }
-
-    @Override
-    public ResponseEntity<String> verifyEmailAndSendOtp(String email) {
+    public ResponseEntity<String> sendOtp(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address" + email));
 
@@ -66,7 +41,7 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
         MailBody mailBody = MailBody.builder()
                 .to(email)
                 .subject("OTP for Verify Email request")
-                .text("This is the OTP for your Verify Email request: " + otp)
+                .text("This is the OTP: " + otp)
                 .build();
 
         VerifyEmail fp = VerifyEmail.builder()
@@ -77,7 +52,7 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
 
         emailService.sendSimpleMessage(mailBody);
         verifyEmailRepository.save(fp);
-        return ResponseEntity.ok("Email sent for verification");
+        return ResponseEntity.ok("Email sent successfully");
     }
 
     @Override

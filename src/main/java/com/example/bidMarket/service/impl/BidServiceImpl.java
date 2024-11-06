@@ -103,6 +103,7 @@ public class BidServiceImpl implements BidService {
     }
 
     // Service này lấy tat ca cac bid cua auction (Valid và Invalid)
+    // Test
     @Override
     public Page<BidDto> getAllBidsOfAuction(UUID auctionId, int page, int size, String sortField, Sort.Direction direction) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
@@ -126,9 +127,7 @@ public class BidServiceImpl implements BidService {
             log.warn("No valid bids found for auction ID: " + auctionId);
             throw new AppException(ErrorCode.BID_NOT_FOUND);
         }
-
         return bids.map(bidMapper::bidToBidDto);
-
     }
 
 
