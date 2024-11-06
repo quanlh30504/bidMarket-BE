@@ -7,6 +7,8 @@ import com.example.bidMarket.dto.Request.RegisterRequest;
 import com.example.bidMarket.dto.Response.AccountInfo;
 import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
 import com.example.bidMarket.dto.Response.RegisterResponse;
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.UserService;
@@ -46,12 +48,20 @@ public class UserController {
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) throws Exception {
         logger.info("Start sign up for user: {}", registerRequest.getEmail());
         RegisterResponse registerResponse = userService.createUser(registerRequest);
+        verifyEmailService.sendOtp(registerRequest.getEmail());
         return ResponseEntity.ok(registerResponse);
     }
 
     @PostMapping("/signin")
     public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse cookieResponse) {
         logger.debug("Received signin request for user: {}", loginRequest.getEmail());
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.isVerified()){
+            logger.warn("Email " + loginRequest.getEmail() + " is not verified");
+            throw new AppException(ErrorCode.USED_IS_NOT_VERIFIED);
+        }
         try {
             JwtAuthenticationResponse response = userService.authenticateUser(loginRequest);
             createAuthCookies(cookieResponse, response.getRefreshToken());
@@ -141,7 +151,7 @@ public class UserController {
     }
 
     @PostMapping("/changePassword/{email}")
-    public ResponseEntity<String> changePasswordHandler(
+    public ResponseEntity<String> changePassword(
             @PathVariable String email,
             @RequestParam String currentPassword,
             @RequestParam String newPassword

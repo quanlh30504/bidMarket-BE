@@ -40,8 +40,7 @@ public class VNPayController {
     - order info is order id
     */
     @PostMapping("/submitOrder")
-    public String submidOrder(@RequestParam("amount") int orderTotal,
-                              @RequestParam("orderInfo") String orderInfo,  // Order info is order id
+    public String submidOrder(@RequestParam("orderInfo") String orderInfo,  // Order info is order id
                               HttpServletRequest request){
         Order order = orderRepository.findById(UUID.fromString(orderInfo))
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
@@ -51,7 +50,7 @@ public class VNPayController {
             throw new AppException(ErrorCode.PAYMENT_FAILED);
         }
         String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        String vnpayUrl = vnPayService.createPayment(request, orderTotal, orderInfo, baseUrl);
+        String vnpayUrl = vnPayService.createPayment(request, orderInfo, baseUrl);
         return "redirect:" + vnpayUrl;
     }
 

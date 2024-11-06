@@ -35,4 +35,13 @@ public class Comment {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @PreUpdate
+    void preUpdate(){
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    void preCreate(){
+        createdAt = LocalDateTime.now();
+    }
 }

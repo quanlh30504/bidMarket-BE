@@ -12,6 +12,7 @@ public enum ErrorCode {
     USER_ROLE_INVALID(1008, "Invalid user role"),
     EMAIL_ALREADY_EXIST(1009, "Email already exists"),
     USER_WAS_VERIFIED(1010, "Email already verified"),
+    USED_IS_NOT_VERIFIED(1011, "Email is not verified"),
 
     // Validation errors (2xxx)
     INVALID_REQUEST(2001, "Invalid request format"),

@@ -14,6 +14,10 @@ import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.OrderService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -74,6 +78,13 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByAuctionId(auctionId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
         return orderMapper.orderToOrderDto(order);
+    }
+
+    @Override
+    public Page<Order> getOrdersByUserId(UUID userId, int page, int size, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return orderRepository.findByUserId(userId, pageable);
     }
 
 }
