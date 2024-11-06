@@ -1,10 +1,14 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.SearchService.PaginatedResponse;
+import com.example.bidMarket.dto.CommentDto;
 import com.example.bidMarket.dto.Request.CreateCommentRequest;
 import com.example.bidMarket.dto.Request.UpdateCommentRequest;
+import com.example.bidMarket.mapper.CommentMapper;
 import com.example.bidMarket.model.Comment;
 import com.example.bidMarket.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,13 +33,25 @@ public class CommentController {
     }
 
     @GetMapping("/auction/{auctionId}")
-    public ResponseEntity<List<Comment>> getCommentsByAuction(@PathVariable UUID auctionId) {
-        try {
-            List<Comment> comments = commentService.getCommentsByAuction(auctionId);
-            return ResponseEntity.ok(comments);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+    public PaginatedResponse<CommentDto> getCommentsByAuction(
+            @PathVariable UUID auctionId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+        Page<Comment> commentPage = commentService.getCommentsByAuctionId(auctionId, size, page, sortBy, sortDirection);
+        List<CommentDto> content = commentPage.getContent().stream()
+                .map(CommentMapper::commentToCommentDto)
+                .toList();
+        return new PaginatedResponse<>(
+                commentPage.getNumber(),
+                commentPage.getSize(),
+                commentPage.getTotalElements(),
+                commentPage.getTotalPages(),
+                commentPage.isLast(),
+                commentPage.isFirst(),
+                content
+        );
     }
 
     @GetMapping("/user/{userId}")

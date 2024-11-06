@@ -17,6 +17,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.expression.ExpressionException;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +84,12 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.paymentToPaymentDto(payment);
     }
 
+//    @Override
+//    public Page<Payment> getPaymentsByUserId(UUID userId, int page, int size, String sortBy, String sortDirection) {
+//        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+//        Pageable pageable = PageRequest.of(page, size, sort);
+//        return paymentRepository.findAllByUserId(userId, pageable);
+//    }
 
 
 }

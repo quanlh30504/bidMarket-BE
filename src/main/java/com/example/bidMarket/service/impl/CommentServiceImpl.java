@@ -10,6 +10,10 @@ import com.example.bidMarket.repository.CommentRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,10 +46,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> getCommentsByAuction(UUID auctionId) throws Exception {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
-        return commentRepository.findAllByAuction(auction);
+    public Page<Comment> getCommentsByAuctionId(UUID auctionId, int size, int page, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return commentRepository.findAllByAuctionId(auctionId, pageable);
     }
 
     @Override

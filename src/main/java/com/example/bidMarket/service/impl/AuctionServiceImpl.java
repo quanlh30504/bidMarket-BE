@@ -13,6 +13,7 @@ import com.example.bidMarket.mapper.ProductMapper;
 import com.example.bidMarket.model.*;
 import com.example.bidMarket.repository.*;
 import com.example.bidMarket.service.AuctionService;
+import com.example.bidMarket.service.BidService;
 import com.example.bidMarket.service.OrderService;
 import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -46,6 +48,7 @@ public class AuctionServiceImpl implements AuctionService {
 
     private final ProductService productService;
     private final OrderService orderService;
+    private final BidService bidService;
 
     @Override
     public List<AuctionDto> getAllAuction() {
@@ -80,6 +83,23 @@ public class AuctionServiceImpl implements AuctionService {
         Page<Auction>auctions = auctionRepository.findAll(spec, pageable);
         return auctions;
 
+    }
+
+    @Override
+    @Transactional
+    @Scheduled(fixedRate = 86400000) // Update 1 time each day
+    public void syncBidCountOfAuction() {
+        List<Auction> auctions = auctionRepository.findAll();
+        if (auctions.isEmpty()) return;
+
+        for (Auction auction : auctions) {
+            long bidCount = bidService.getBidCountOfAuction(auction.getId());
+
+            if (bidCount != auction.getBidCount()){
+                auction.setBidCount(bidCount);
+                auctionRepository.save(auction);
+            }
+        }
     }
 
     @Override

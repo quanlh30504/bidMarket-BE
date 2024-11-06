@@ -55,6 +55,9 @@ public class Auction {
     @Version
     private int version;
 
+    @Column(name = "bid_count", nullable = false)
+    private long bidCount = 0;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private LocalDateTime createdAt;

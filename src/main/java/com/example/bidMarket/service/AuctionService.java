@@ -36,4 +36,8 @@ public interface AuctionService {
                                        LocalDateTime startTime,
                                        LocalDateTime endTime,
                                        int page, int size, String sortField, Sort.Direction sortDirection);
+
+    // Synchronize bid count of auction
+    public void syncBidCountOfAuction();
+
 }

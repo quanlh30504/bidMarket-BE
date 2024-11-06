@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentMapper {
     public final OrderRepository orderRepository;
-    public PaymentDto paymentToPaymentDto(Payment payment) {
+    public static PaymentDto paymentToPaymentDto(Payment payment) {
         return PaymentDto.builder()
                 .id(payment.getId())
                 .orderId(payment.getOrder().getId())

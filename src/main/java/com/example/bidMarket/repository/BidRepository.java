@@ -18,4 +18,7 @@ public interface BidRepository extends JpaRepository<Bid, UUID> {
     Page<Bid> findAllByAuctionId(UUID auctionId, Pageable pageable);
 
     Page<Bid> findAllByAuctionIdAndStatus(UUID auctionId, BidStatus status, Pageable pageable);
+
+    // phương thức đếm số lượng Bid có auctionId và status
+    long countByAuctionIdAndStatus(UUID auctionId, BidStatus status);
 }
