@@ -40,4 +40,5 @@ public interface AuctionService {
     // Synchronize bid count of auction
     public void syncBidCountOfAuction();
 
+    public void updateAuctionStatusOpenToClose();
 }

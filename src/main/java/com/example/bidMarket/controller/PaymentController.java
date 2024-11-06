@@ -25,7 +25,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping("/user/{userId}")
-    public PaginatedResponse<PaymentDto> getOrdersByUserId(
+    public PaginatedResponse<PaymentDto> getPaymentsByUserId(
             @PathVariable UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,

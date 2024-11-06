@@ -23,7 +23,7 @@ public class Auction {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 

@@ -151,7 +151,7 @@ public class UserController {
     }
 
     @PostMapping("/changePassword/{email}")
-    public ResponseEntity<String> changePasswordHandler(
+    public ResponseEntity<String> changePassword(
             @PathVariable String email,
             @RequestParam String currentPassword,
             @RequestParam String newPassword

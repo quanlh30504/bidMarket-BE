@@ -1,6 +1,6 @@
 package com.example.bidMarket.service.impl;
 
-import com.example.bidMarket.dto.Request.CreateCommentRequest;
+import com.example.bidMarket.dto.Request.CommentCreateRequest;
 import com.example.bidMarket.dto.Request.UpdateCommentRequest;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Comment;
@@ -30,11 +30,11 @@ public class CommentServiceImpl implements CommentService {
     private AuctionRepository auctionRepository;
 
     @Override
-    public Comment addComment(UUID userId, UUID auctionId, CreateCommentRequest request) throws Exception {
-        User user = userRepository.findById(userId)
+    public Comment addComment(CommentCreateRequest request) throws Exception {
+        User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        Auction auction = auctionRepository.findById(auctionId)
+        Auction auction = auctionRepository.findById(request.getAuctionId())
                 .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
 
         Comment comment = new Comment();
@@ -64,12 +64,12 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
 
-        comment.setContent(request.getContent());
+        comment.setContent(request.getNewContent());
         return commentRepository.save(comment);
     }
 
     @Override
-    public void deleteComment(UUID commentId) throws Exception {
+    public void deleteComment(UUID commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
         commentRepository.delete(comment);

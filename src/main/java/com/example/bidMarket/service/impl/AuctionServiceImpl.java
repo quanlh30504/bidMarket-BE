@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,8 @@ public class AuctionServiceImpl implements AuctionService {
     private final ProductService productService;
     private final OrderService orderService;
     private final BidService bidService;
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     public List<AuctionDto> getAllAuction() {
@@ -86,9 +89,24 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
+    @Scheduled(fixedRate = 60000) // update auction status open -> close every 1 minute
+    @Transactional
+    public void updateAuctionStatusOpenToClose() {
+        log.warn("Start update auction status open to close");
+        LocalDateTime now = LocalDateTime.now();
+        List<Auction> expiredAuctions = auctionRepository.findByEndTimeBeforeAndStatus(now, AuctionStatus.OPEN);
+        for (Auction auction : expiredAuctions) {
+            log.warn("Close auction id: " + auction.getId());
+            closeAuction(auction.getId());
+            messagingTemplate.convertAndSend("/topic/auction-status", auction);
+        }
+    }
+
+    @Override
     @Transactional
     @Scheduled(fixedRate = 86400000) // Update 1 time each day
     public void syncBidCountOfAuction() {
+        log.warn("Start auto calculate bid count");
         List<Auction> auctions = auctionRepository.findAll();
         if (auctions.isEmpty()) return;
 
@@ -222,7 +240,9 @@ public class AuctionServiceImpl implements AuctionService {
 
             Optional <Bid> winBid = bidRepository.findFirstByAuctionIdAndStatusOrderByBidAmountDesc(auction.getId(), BidStatus.VALID);
             if (winBid.isEmpty()){
-                throw new AppException(ErrorCode.AUCTION_NOT_HAVE_BID);
+//                throw new AppException(ErrorCode.AUCTION_NOT_HAVE_BID);
+                log.warn("Auction no have winner");
+                return;
             }
 
             Bid bid = winBid.get();
