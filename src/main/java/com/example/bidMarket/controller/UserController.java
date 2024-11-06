@@ -4,6 +4,7 @@ import com.example.bidMarket.dto.*;
 import com.example.bidMarket.dto.Request.LoginRequest;
 import com.example.bidMarket.dto.Request.RefreshTokenRequest;
 import com.example.bidMarket.dto.Request.RegisterRequest;
+import com.example.bidMarket.dto.Response.AccountInfo;
 import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
 import com.example.bidMarket.dto.Response.RegisterResponse;
 import com.example.bidMarket.model.User;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -45,7 +47,7 @@ public class UserController {
         logger.info("Start sign up for user: {}", registerRequest.getEmail());
         RegisterResponse registerResponse = userService.createUser(registerRequest);
         createAuthCookies(response, registerResponse.getRefreshToken());
-        verifyEmailService.verifyEmailRegister(registerRequest.getEmail());
+        verifyEmailService.verifyEmailAndSendOtp(registerRequest.getEmail());
         return ResponseEntity.ok(registerResponse);
     }
 
@@ -101,17 +103,24 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
+//    @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
     public ResponseEntity<UserDto> updateUser(@PathVariable UUID id, @Valid @RequestBody UserUpdateDto userUpdateDto) {
         UserDto userDto = userService.updateUser(id, userUpdateDto);
         return ResponseEntity.ok(userDto);
     }
 
-    @GetMapping("/{id}/profile")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
-    public ResponseEntity<ProfileDto> getUserProfile(@PathVariable UUID id) {
-        ProfileDto profileDto = userService.getProfileByUserId(id);
-        return ResponseEntity.ok(profileDto);
+    @GetMapping("/{id}/accountInfo")
+//    @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
+    public ResponseEntity<AccountInfo> getUserAccountInfo(@PathVariable UUID id) {
+        logger.info("Get account info of user id " + id);
+        return ResponseEntity.ok(userService.getAccountInfoByUserId(id));
+    }
+
+    // update avatar
+    @PutMapping("/avatar/{userId}")
+    public ResponseEntity<String> updateAvatar(@PathVariable UUID userId, @RequestParam String imageUrl){
+        userService.updateAvatar(userId, imageUrl);
+        return ResponseEntity.ok("Update avatar successfully");
     }
 
     @PutMapping("/{id}/profile")
@@ -120,12 +129,21 @@ public class UserController {
         return ResponseEntity.ok(updatedProfile);
     }
 
-
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable UUID id) {
         userService.deleteUser(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/changePassword/{email}")
+    public ResponseEntity<String> changePasswordHandler(
+            @PathVariable String email,
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword
+            ) {
+        userService.changePassword(email, currentPassword, newPassword);
+        return ResponseEntity.ok("Change Password successfully");
     }
 
 }
