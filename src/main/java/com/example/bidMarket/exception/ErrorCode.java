@@ -55,9 +55,11 @@ public enum ErrorCode {
     BID_UPDATE_FAILED(6005, "Failed to update bid"),
     BID_IS_REJECTED(6006, "Bid is rejected because the auction is not open"),
     MAX_BID_TOO_LOW(6007, "Max bid is lower than the current highest bid"),
-    MAX_BID_EXCEEDED(6008, "Max bid exceeds the current highest bid"),
+    MAX_BID_EXCEEDED(6008, "Max bid must exceeds the current highest bid"),
     FIRST_BID_MANUAL(6009, "First bid must be manual"),
     BID_INCREAMOUNT_TOO_LOW(6010, "Bid increment amount must be greater than the minimum bid increment"),
+    NEW_BID_TOO_HIGH(6011, "New bid amount is higher than the max bid"),
+
 
     // Profile-related errors (7xxx)
     PROFILE_NOT_FOUND(7001, "Profile not found"),

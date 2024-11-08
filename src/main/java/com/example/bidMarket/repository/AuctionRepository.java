@@ -23,6 +23,6 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID>, JpaSpec
     @Lock(LockModeType.OPTIMISTIC)
     Optional<Auction> findById(UUID id);
 
-    @Query("SELECT MAX(b.maxBid) FROM Bid b WHERE b.userId = :userId AND b.auction.id = :auctionId")
-    BigDecimal findMaxBidByUserAndAuction(@Param("userId") UUID userId, @Param("auctionId") UUID auctionId);
+//    @Query("SELECT MAX(b.maxBid) FROM Bid b WHERE b.userId = :userId AND b.auction.id = :auctionId")
+//    BigDecimal findMaxBidByUserAndAuction(@Param("userId") UUID userId, @Param("auctionId") UUID auctionId);
 }

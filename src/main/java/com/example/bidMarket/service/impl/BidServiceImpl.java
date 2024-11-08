@@ -26,6 +26,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,7 +52,6 @@ public class BidServiceImpl implements BidService {
                 .userId(bidCreateRequest.getUserId())
                 .auction(auction)
                 .bidAmount(bidCreateRequest.getBidAmount())
-                .maxBid(null)
                 .status(BidStatus.PENDING)
                 .build();
         return BidCreateResponse.builder()
@@ -150,26 +150,22 @@ public class BidServiceImpl implements BidService {
         }
 
         // Lấy maxBid từ request hoặc từ DB -> giải quyết được vấn đề lưu lại maxBid sau mỗi lần tự động đặt giá
-        BigDecimal maxBid = bidCreateRequest.getMaxBid() != null ? bidCreateRequest.getMaxBid()
-                :auctionRepository.findMaxBidByUserAndAuction(bidCreateRequest.getUserId(), bidCreateRequest.getAuctionId());
+        BigDecimal maxBid =  bidCreateRequest.getMaxBid();
+
 
         //  MaxBid < HighestBid -> báo lỗi để người dùng chọn lại Auto hay không
         if (highestBid.getBidAmount().compareTo(maxBid) >= 0) {
             throw new AppException(ErrorCode.MAX_BID_EXCEEDED);
-        }
-        // MaxBid phải > BidAmount
-        if (maxBid.compareTo(highestBid.getBidAmount()) <= 0) {
-            throw new AppException(ErrorCode.MAX_BID_TOO_LOW);
         }
 
         // Giá tự động phải cao hơn giá hiện tại ít nhất là minimumBidIncrement
         if (auction.getMinimumBidIncrement().compareTo(bidCreateRequest.getIncreAmount()) > 0) {
             throw new AppException(ErrorCode.BID_INCREAMOUNT_TOO_LOW);
         }
-        checkAndPlaceAutoBid(auction, bidCreateRequest.getUserId(), maxBid, bidCreateRequest.getIncreAmount());
+        checkAndPlaceAutoBid(auction, bidCreateRequest.getUserId(), maxBid, bidCreateRequest.getIncreAmount(), bidCreateRequest.getBidTime());
     }
 
-    private void checkAndPlaceAutoBid(Auction auction, UUID userId, BigDecimal maxBid, BigDecimal increAmount) {
+    private void checkAndPlaceAutoBid(Auction auction, UUID userId, BigDecimal maxBid, BigDecimal increAmount, LocalDateTime bidTime) {
         Bid highestBid = bidRepository.findHighestBidByAuctionId(auction.getId());
 
         if (highestBid != null && highestBid.getUserId().equals(userId)) {
@@ -184,19 +180,12 @@ public class BidServiceImpl implements BidService {
                     .auction(auction)
                     .userId(userId)
                     .bidAmount(newBidAmount)
-                    .maxBid(maxBid)
-                    .status(BidStatus.PENDING)
+                    .status(BidStatus.VALID)
+                    .bidTime(bidTime)
                     .build();
             bidRepository.save(autoBid);
-        } else {    // Nếu newBidAmount > maxBid -> đặt giá maxBid luôn
-            Bid autoBid = Bid.builder()
-                    .auction(auction)
-                    .userId(userId)
-                    .bidAmount(maxBid)
-                    .maxBid(maxBid)
-                    .status(BidStatus.PENDING)
-                    .build();
-            bidRepository.save(autoBid);
+        } else {
+            throw new AppException(ErrorCode.NEW_BID_TOO_HIGH);
         }
     }
 }
