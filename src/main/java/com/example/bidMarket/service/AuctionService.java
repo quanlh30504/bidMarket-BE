@@ -27,6 +27,7 @@ public interface AuctionService {
 
     public List<AuctionDto> getAllAuction();
     public AuctionDto getAuctionById(UUID id);
+    public Page<Auction> getAllAuctionByUserId(UUID userId, int page, int size, String sortBy, String sortDirection);
 
     public Page<Auction> searchAuctions(String title,
                                        CategoryType categoryType,

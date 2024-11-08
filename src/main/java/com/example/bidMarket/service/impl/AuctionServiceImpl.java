@@ -69,6 +69,13 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
+    public Page<Auction> getAllAuctionByUserId(UUID userId, int page, int size, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page,size,sort);
+        return auctionRepository.findAllByUserId(userId, pageable);
+    }
+
+    @Override
     public Page<Auction> searchAuctions(String title,
                                         CategoryType categoryType,
                                         AuctionStatus status,

@@ -115,5 +115,30 @@ public class AuctionController {
         auctionService.reOpenAuction(id, auctionUpdateRequest);
         return ResponseEntity.ok("Reopen successfully auction " + id);
     }
+
+    @GetMapping("/user/{userId}")
+    public PaginatedResponse<AuctionSearchResponse> getAllAuctionByUserId (
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "startTime") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Page<Auction> auctionPage = auctionService.getAllAuctionByUserId(userId, page, size, sortBy, sortDirection);
+        List<AuctionSearchResponse> content = auctionPage.getContent().stream()
+                .map(auctionMapper::auctionToAuctionSearchResponse)
+                .toList();
+        return new PaginatedResponse<>(
+                auctionPage.getNumber(),
+                auctionPage.getSize(),
+                auctionPage.getTotalElements(),
+                auctionPage.getTotalPages(),
+                auctionPage.isLast(),
+                auctionPage.isFirst(),
+                content
+        );
+
+
+    }
 }
 

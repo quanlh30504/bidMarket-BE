@@ -95,6 +95,25 @@ public class BidServiceImpl implements BidService {
         }
 
         if (bid.getStatus() == BidStatus.VALID) {
+            // Ở đây sẽ có logic cập nhật bidCount của auction lên 1 tuy nhiên đã được thược hiện bằng trigger ở Database
+            /*
+            DELIMITER $$
+
+            CREATE TRIGGER update_bid_count_on_valid_bid
+            AFTER INSERT ON bids
+            FOR EACH ROW
+            BEGIN
+                -- Chỉ tăng bid_count nếu trạng thái của bid là "VALID"
+                IF NEW.status = 'VALID' THEN
+                    UPDATE auctions
+                    SET bid_count = bid_count + 1
+                    WHERE id = NEW.auction_id;
+                END IF;
+            END$$
+
+            DELIMITER ;
+
+             */
             // Cập nhật phiên đấu giá
             auction.setCurrentPrice(bidRequest.getBidAmount());
             auction.setLastBidTime(bidRequest.getBidTime());
