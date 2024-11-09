@@ -15,12 +15,9 @@ public class RegisterResponse {
     private Role role;
     private String fullName;
     private String phoneNumber;
-    private String profileImageUrl;
 
-    // Chỉ áp dụng nếu role là SELLER
-    private String idCard;
-    private String frontImageURL;
-    private String backImageURL;
     private LocalDate issuedDate;
     private LocalDate expirationDate;
+//    private String jwt;
+//    private String refreshToken;
 }

@@ -6,11 +6,9 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.bidMarket.AWS.AmazonS3Service;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
-import com.example.bidMarket.model.Product;
-import com.example.bidMarket.model.ProductImage;
+
 import com.example.bidMarket.model.Profile;
-import com.example.bidMarket.repository.ProductImageRepository;
-import com.example.bidMarket.repository.ProductRepository;
+
 import com.example.bidMarket.repository.ProfileRepository;
 import com.example.bidMarket.service.ImageService;
 import lombok.RequiredArgsConstructor;

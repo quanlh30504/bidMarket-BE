@@ -13,8 +13,8 @@ public class IdCardDto {
     private UUID id;
     private UUID userId;
     private String idCard;
-    private String frontImageURL;
-    private String backImageURL;
+    private String frontImageUrl;
+    private String backImageUrl;
     private LocalDate issuedDate;
     private LocalDate expirationDate;
 

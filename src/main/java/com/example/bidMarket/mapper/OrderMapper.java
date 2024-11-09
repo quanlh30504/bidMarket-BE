@@ -2,15 +2,19 @@ package com.example.bidMarket.mapper;
 
 
 import com.example.bidMarket.dto.OrderDto;
+import com.example.bidMarket.dto.Response.OrderResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Order;
+import com.example.bidMarket.model.ProductImage;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.AuctionRepository;
 import com.example.bidMarket.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -43,6 +47,22 @@ public class OrderMapper {
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .paymentDueDate(order.getPaymentDueDate())
+                .build();
+    }
+
+    public static OrderResponse orderToOrderResponse(Order order) {
+        List<ProductImage> productImageList = order.getAuction().getProduct().getProductImages();
+        return OrderResponse.builder()
+                .id(order.getId())
+                .auctionId(order.getAuction().getId())
+                .userId(order.getUser().getId())
+                .userEmail(order.getUser().getEmail())
+                .auctionTitle(order.getAuction().getTitle())
+                .productImageUrl(!productImageList.isEmpty() ? productImageList.get(0).getImageUrl() : null)
+                .totalAmount(order.getTotalAmount())
+                .status(order.getStatus())
+                .paymentDueDate(order.getPaymentDueDate())
+                .createAt(order.getCreatedAt())
                 .build();
     }
 }

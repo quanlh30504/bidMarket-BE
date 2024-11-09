@@ -2,6 +2,8 @@ package com.example.bidMarket.repository;
 
 import com.example.bidMarket.model.Order;
 import jakarta.websocket.server.PathParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +19,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "Select o from Order o where o.auction.id = :auctionId"
     )
     Optional<Order> findByAuctionId(@Param("auctionId") UUID auctionId);
+
+    Page<Order> findByUserId(UUID userId, Pageable pageable);
 }

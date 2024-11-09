@@ -1,5 +1,6 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
@@ -103,6 +104,7 @@ public class BidServiceImpl implements BidService {
     }
 
     // Service này lấy tat ca cac bid cua auction (Valid và Invalid)
+    // Test
     @Override
     public Page<BidDto> getAllBidsOfAuction(UUID auctionId, int page, int size, String sortField, Sort.Direction direction) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
@@ -126,13 +128,11 @@ public class BidServiceImpl implements BidService {
             log.warn("No valid bids found for auction ID: " + auctionId);
             throw new AppException(ErrorCode.BID_NOT_FOUND);
         }
-
         return bids.map(bidMapper::bidToBidDto);
-
     }
 
-
-
-
-
+    @Override
+    public long getBidCountOfAuction(UUID auctionId) {
+        return bidRepository.countByAuctionIdAndStatus(auctionId, BidStatus.VALID);
+    }
 }
