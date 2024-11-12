@@ -96,7 +96,7 @@ public class NotificationService {
     private void sendNotificationToUser(UUID userId, NotificationDto notification) {
         String destination = "/user/" + userId + "/queue/notifications";
         try {
-            System.out.println("Sending WebSocket notification to destination: " + destination);
+//            System.out.println("Sending WebSocket notification to destination: " + destination);
             System.out.println("Notification content: " + notification);
 
 //            messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/queue/notifications", notification);

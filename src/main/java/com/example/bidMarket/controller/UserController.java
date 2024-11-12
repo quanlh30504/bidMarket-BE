@@ -30,13 +30,11 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/signup")
     public ResponseEntity<RegisterResponse> register(
-            @RequestPart("registerRequest") @Valid RegisterRequest registerRequest,
-            @RequestPart(value = "profileImageUrl", required = false) MultipartFile profileImageUrl) throws Exception {
+            @RequestPart("registerRequest") @Valid RegisterRequest registerRequest) throws Exception {
 
         logger.info("Start sign up");
-        registerRequest.setProfileImageUrl(profileImageUrl);
 
         RegisterResponse registerResponse = userService.createUser(registerRequest);
         return ResponseEntity.ok(registerResponse);

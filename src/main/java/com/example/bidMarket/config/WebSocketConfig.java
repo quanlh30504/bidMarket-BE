@@ -27,11 +27,4 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOrigins("http://localhost:3000")
                 .withSockJS();
     }
-
-//    @Override
-//    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
-//        registration.setMessageSizeLimit(8192) // default : 64 * 1024
-//                .setSendBufferSizeLimit(8192) // default : 512 * 1024
-//                .setSendTimeLimit(10000); // default : 10 * 10000
-//    }
 }
