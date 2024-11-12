@@ -6,7 +6,9 @@ import com.example.bidMarket.model.IdCard;
 import com.example.bidMarket.model.Profile;
 import com.example.bidMarket.Enum.Role;
 import com.example.bidMarket.model.User;
+import com.mysql.cj.protocol.x.XProtocolRowInputStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RegisterMapper {
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${aws.default_avatar_url}")
+    private String DEFAULT_IMAGE_URL;
     public User requestToUser(RegisterRequest request) {
         return User.builder()
                 .role(request.getRole())
@@ -27,16 +32,16 @@ public class RegisterMapper {
                 .user(user)  // Gán user đã tạo trước đó
                 .fullName(request.getFullName())
                 .phoneNumber(request.getPhoneNumber())
-//                .profileImageUrl(request.getProfileImageUrl())
+                .profileImageUrl(DEFAULT_IMAGE_URL) // AVATAR DEFAULT
                 .build();
     }
 
     public IdCard requestToIdCard(User user, RegisterRequest request) {
         return IdCard.builder()
-                .user(user)  // Gán user đã tạo trước đó
+                .user(user)
                 .idCard(request.getIdCard())
-                .frontImageURL(request.getFrontImageURL())
-                .backImageURL(request.getBackImageURL())
+//                .frontImageURL(request.getFrontImage())
+//                .backImageURL(request.getBackImage())
                 .issuedDate(request.getIssuedDate())
                 .expirationDate(request.getExpirationDate())
                 .build();
@@ -48,13 +53,9 @@ public class RegisterMapper {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .fullName(user.getProfile().getFullName())
-                .phoneNumber(user.getProfile().getPhoneNumber())
-                .profileImageUrl(user.getProfile().getProfileImageUrl()).build();
+                .phoneNumber(user.getProfile().getPhoneNumber()).build();
 
         if (user.getRole() == Role.SELLER && user.getIdCard() != null) {
-            registerResponse.setIdCard(user.getIdCard().getIdCard());
-            registerResponse.setFrontImageURL(user.getIdCard().getFrontImageURL());
-            registerResponse.setBackImageURL(user.getIdCard().getBackImageURL());
             registerResponse.setIssuedDate(user.getIdCard().getIssuedDate());
             registerResponse.setExpirationDate(user.getIdCard().getExpirationDate());
         }

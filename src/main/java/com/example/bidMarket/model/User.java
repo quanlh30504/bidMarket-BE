@@ -3,6 +3,7 @@ package com.example.bidMarket.model;
 import com.example.bidMarket.Enum.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Builder
+@DynamicUpdate
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
@@ -36,11 +38,20 @@ public class User {
     @Column(name = "is_banned")
     private boolean isBanned = false;
 
+    @Column(name = "is_verified")
+    private boolean isVerified = false;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Profile profile;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Address address;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private IdCard idCard;
+
+    @OneToOne(mappedBy = "user")
+    private VerifyEmail verifyEmail;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

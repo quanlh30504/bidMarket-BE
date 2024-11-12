@@ -1,9 +1,13 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
 import com.example.bidMarket.dto.Response.BidCreateResponse;
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
+import com.example.bidMarket.mapper.BidMapper;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Bid;
 import com.example.bidMarket.model.Payment;
@@ -15,19 +19,28 @@ import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.BidService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BidServiceImpl implements BidService {
     private final BidRepository bidRepository;
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final PaymentRepository paymentRepository;
+
+    private final BidMapper bidMapper;
 
     @Override
     @Transactional
@@ -58,23 +71,6 @@ public class BidServiceImpl implements BidService {
 
         Auction auction = auctionOpt.get();
 
-        // Kiểm tra thời gian đặt lệnh
-        if (bidRequest.getBidTime().isBefore(auction.getStartTime()) || bidRequest.getBidTime().isAfter(auction.getEndTime())
-            || bidRequest.getBidTime().isBefore(auction.getLastBidTime())
-        ) {
-            throw new IllegalArgumentException("Bid time is invalid");
-        }
-
-        // Kiểm tra số tiền đặt giá
-        if (bidRequest.getBidAmount().compareTo(auction.getCurrentPrice().add(auction.getMinimumBidIncrement())) < 0) {
-            throw new IllegalArgumentException("Bid amount is too low");
-        }
-
-        // Cập nhật phiên đấu giá
-        auction.setCurrentPrice(bidRequest.getBidAmount());
-        auction.setLastBidTime(bidRequest.getBidTime());
-        auctionRepository.save(auction);
-
         // Lưu lệnh đặt giá vào DB
         Bid bid = Bid.builder()
                 .auction(auction)
@@ -83,8 +79,60 @@ public class BidServiceImpl implements BidService {
                 .status(BidStatus.VALID)
                 .bidTime(bidRequest.getBidTime())
                 .build();
+
+        // Kiểm tra thời gian đặt lệnh
+        if (bidRequest.getBidTime().isBefore(auction.getStartTime()) || bidRequest.getBidTime().isAfter(auction.getEndTime())
+            || bidRequest.getBidTime().isBefore(auction.getLastBidTime())
+        ) {
+            log.error("Bid time is invalid");
+            bid.setStatus(BidStatus.INVALID);
+        }
+
+        // Kiểm tra số tiền đặt giá
+        if (bidRequest.getBidAmount().compareTo(auction.getCurrentPrice().add(auction.getMinimumBidIncrement())) < 0) {
+            log.error("Bid amount is too low");
+            bid.setStatus(BidStatus.INVALID);
+        }
+
+        if (bid.getStatus() == BidStatus.VALID) {
+            // Cập nhật phiên đấu giá
+            auction.setCurrentPrice(bidRequest.getBidAmount());
+            auction.setLastBidTime(bidRequest.getBidTime());
+            auctionRepository.save(auction);
+        }
         bidRepository.save(bid);
     }
 
+    // Service này lấy tat ca cac bid cua auction (Valid và Invalid)
+    // Test
+    @Override
+    public Page<BidDto> getAllBidsOfAuction(UUID auctionId, int page, int size, String sortField, Sort.Direction direction) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        Page<Bid> bids = bidRepository.findAllByAuctionId(auctionId, pageable);
 
+        if (bids.isEmpty()) {
+            log.error("No bids found for auction ID: " + auctionId);
+            throw new AppException(ErrorCode.BID_NOT_FOUND);
+        }
+
+        return bids.map(bidMapper::bidToBidDto);
+    }
+
+    // Service lấy các bid hop le (VALID) của auction
+    @Override
+    public Page<BidDto> getBidsOfAuction(UUID auctionId, int page, int size, BidStatus status, String sortField, Sort.Direction direction) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        Page<Bid> bids = bidRepository.findAllByAuctionIdAndStatus(auctionId, BidStatus.VALID, pageable);
+
+        if (bids.isEmpty()) {
+            log.warn("No valid bids found for auction ID: " + auctionId);
+            throw new AppException(ErrorCode.BID_NOT_FOUND);
+        }
+        return bids.map(bidMapper::bidToBidDto);
+    }
+
+    @Override
+    public long getBidCountOfAuction(UUID auctionId) {
+        return bidRepository.countByAuctionIdAndStatus(auctionId, BidStatus.VALID);
+    }
 }

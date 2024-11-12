@@ -1,5 +1,6 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.AWS.AmazonS3Service;
 import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.Enum.ProductStatus;
 import com.example.bidMarket.SearchService.ProductSpecification;
@@ -16,6 +17,7 @@ import com.example.bidMarket.model.ProductImage;
 import com.example.bidMarket.repository.CategoryRepository;
 import com.example.bidMarket.repository.ProductImageRepository;
 import com.example.bidMarket.repository.ProductRepository;
+import com.example.bidMarket.service.ImageService;
 import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +28,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.expression.ExpressionException;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +45,11 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final ImageService imageService;
 
-//    private final ProductCategoryRepository productCategoryRepository;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final AmazonS3Service amazonS3Service;
 
     @Override
     public ProductDto getProduct(UUID id) throws Exception {
@@ -65,19 +70,23 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public Product createProduct(ProductCreateRequest request) throws Exception {
         Product product = productMapper.productCreateToProduct(request);
-        List<ProductImageDto> productImageDtoList = request.getProductImages();
-        // Lưu hình ảnh sản phẩm
-        if (productImageDtoList != null && !productImageDtoList.isEmpty()) {
-            List<ProductImage> productImageList= new ArrayList<>();
-            for (ProductImageDto imageDto : productImageDtoList) {
-                ProductImage productImage = productMapper.productImageDtoToProductImage(imageDto);
-                productImage.setProduct(product);
-                productImageList.add(productImage);
-            }
-            product.setProductImages(productImageList);
-        }
+
+        // Save product to get its id
         product = productRepository.save(product);
-        return product;
+
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            List<ProductImage> productImages = new ArrayList<>();
+            for (int i = 0; i < request.getImageUrls().size(); i++) {
+                ProductImage productImage = new ProductImage();
+                productImage.setImageUrl(request.getImageUrls().get(i));
+                productImage.setPrimary(i == 0);
+                productImage.setProduct(product);
+                productImages.add(productImage);
+            }
+            product.setProductImages(productImages);
+        }
+
+        return productRepository.save(product);
     }
 
     @Override
@@ -85,64 +94,108 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(UUID productId) {
         Product product = productRepository.findById(productId)
                         .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
         if (product.getStatus() == ProductStatus.ACTIVE) {
+            log.warn("Product is active so can't delete this product");
             throw new AppException(ErrorCode.PRODUCT_DELETION_FAILED);
         }
-        productRepository.deleteById(productId);
+
+        try {
+            product.setStatus(ProductStatus.DELETING);
+            productRepository.save(product);
+
+            // !!!need delete product_category table
+            productRepository.delete(product);
+
+            for (ProductImage productImage : product.getProductImages()) {
+                try {
+                    amazonS3Service.deleteFile(productImage.getImageUrl());
+                } catch (Exception e) {
+                    log.error("Failed to delete image from S3: {}", productImage.getImageUrl(), e);
+                }
+            }
+        } catch (Exception e) {
+            compensateDeleteFailure(product);
+            throw new AppException(ErrorCode.PRODUCT_DELETION_FAILED);
+        }
+    }
+
+    private void compensateDeleteFailure(Product product) {
+        try {
+            product.setStatus(ProductStatus.INACTIVE);
+            productRepository.save(product);
+        } catch (Exception e) {
+            log.error("Failed to compensate for delete failure for product: {}", product.getId(), e);
+        }
     }
 
     @Override
     @Transactional
     public ProductDto updateProduct(UUID id, ProductUpdateRequest request) {
-        log.info("Start update product");
-        Product product = productRepository.findById(id)
+        log.info("Updating product with id: {}", id);
+
+        Product product = findProductById(id);
+        validateProductStatus(product);
+
+        updateBasicInfo(product, request);
+        updateImages(product, request.getNewImages());
+        updateCategories(product, request.getCategories());
+
+        Product updatedProduct = productRepository.save(product);
+        log.info("Successfully updated product with id: {}", id);
+        return productMapper.productToProductDto(updatedProduct);
+    }
+
+    private void updateBasicInfo(Product product, ProductUpdateRequest request) {
+        if (request.getName() != null) {
+            product.setName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            product.setDescription(request.getDescription());
+        }
+        // change later
+        if (request.getStockQuantity() != 0) {
+            product.setStockQuantity(request.getStockQuantity());
+        }
+    }
+    private Product findProductById(UUID id) {
+        return productRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    private void validateProductStatus(Product product) {
         if (product.getStatus() != ProductStatus.INACTIVE){
             throw new AppException(ErrorCode.PRODUCT_UPDATE_FAILED);
         }
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-        product.setStockQuantity(request.getStockQuantity());
+    }
 
-        // Cập nhật danh sách ảnh sản phẩm
-        List<ProductImage> currentImages = product.getProductImages();
-        List<ProductImage> newImages = request.getProductImages().stream()
-                .map(productMapper::productImageDtoToProductImage)
-                .collect(Collectors.toList());
+    private void updateCategories(Product product, Set<CategoryType> newCategoryTypes) {
+        if (newCategoryTypes != null && !newCategoryTypes.isEmpty()) {
+            Set<Category> currentCategories = product.getCategories();
+            Set<Category> newCategories = newCategoryTypes.stream()
+                    .map(categoryType -> categoryRepository.findByCategoryType(categoryType)
+                            .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)))
+                    .collect(Collectors.toSet());
 
-        // Xóa các ảnh không còn tồn tại trong danh sách mới
-        currentImages.removeIf(image -> !newImages.contains(image));
+            currentCategories.removeIf(existingCategory -> !newCategories.contains(existingCategory));
+            currentCategories.addAll(newCategories);
+        }
+    }
+    private void updateImages(Product product, List<String> newImageUrls) {
+        if (newImageUrls != null && !newImageUrls.isEmpty()) {
+            List<ProductImage> currentImages = product.getProductImages();
+            currentImages.clear();
 
-        // Thêm các ảnh mới không có trong danh sách hiện tại
-        for (ProductImage newImage : newImages) {
-            if (!currentImages.contains(newImage)) {
+            for (int i = 0; i < newImageUrls.size(); i++) {
+                ProductImage newImage = new ProductImage();
+                newImage.setImageUrl(newImageUrls.get(i));
+                newImage.setPrimary(i == 0);
                 newImage.setProduct(product);
                 currentImages.add(newImage);
             }
+        } else {
+            log.info("No new images provided for product ID: {}", product.getId());
         }
-
-        // Gán lại danh sách ảnh mới cho sản phẩm
-        product.setProductImages(currentImages);
-        // Danh sách category hiện tại
-        Set<Category> currentCategories = product.getCategories();
-
-        Set<Category> newCategories = request.getCategories().stream()
-                .map(categoryType -> categoryRepository.findByCategoryType(categoryType)
-                        .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)))
-                .collect(Collectors.toSet());
-
-        // Xóa các category không còn trong danh sách mới
-        currentCategories.removeIf(existingCategory -> !newCategories.contains(existingCategory));
-
-        // Thêm các category mới không có trong danh sách hiện tại
-        for (Category newCategory : newCategories) {
-            if (!currentCategories.contains(newCategory)) {
-                currentCategories.add(newCategory);
-            }
-        }
-        product.setCategories(currentCategories);
-
-        return productMapper.productToProductDto(productRepository.save(product));
     }
 
     @Override

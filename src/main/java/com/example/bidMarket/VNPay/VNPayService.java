@@ -1,37 +1,49 @@
 package com.example.bidMarket.VNPay;
 
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
+import com.example.bidMarket.model.Order;
+import com.example.bidMarket.repository.OrderRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class VNPayService {
     private final VNPayConfig vnPayConfig;
+    private final OrderRepository orderRepository;
 
-    public String createOrder(HttpServletRequest request, int amount, String orderInfor, String urlReturn){
+    public String createPayment(HttpServletRequest request, String orderInfo, String urlReturn){
+        Order order = orderRepository.findById(UUID.fromString(orderInfo))
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+
         String vnp_Version = vnPayConfig.getVnp_Version();
         String vnp_Command = vnPayConfig.getVnp_Command();
         String vnp_TxnRef = vnPayConfig.getRandomNumber(8);
         String vnp_IpAddr = vnPayConfig.getIpAddress(request);
         String vnp_TmnCode = vnPayConfig.getVnp_TmnCode();
         String orderType = vnPayConfig.getVnp_OrderType();
+        long amount = order.getTotalAmount().longValue();
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf(amount*100L));
+        vnp_Params.put("vnp_Amount", String.valueOf(amount*100));
         vnp_Params.put("vnp_CurrCode", "VND");
 
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", orderInfor);
+        vnp_Params.put("vnp_OrderInfo", orderInfo);
         vnp_Params.put("vnp_OrderType", orderType);
 
         String locate = "vn";

@@ -1,9 +1,8 @@
 package com.example.bidMarket.service.impl;
 
-import com.example.bidMarket.Enum.AuctionStatus;
-import com.example.bidMarket.Enum.CategoryType;
-import com.example.bidMarket.Enum.ProductStatus;
+import com.example.bidMarket.Enum.*;
 import com.example.bidMarket.SearchService.AuctionSpecification;
+import com.example.bidMarket.dto.OrderDto;
 import com.example.bidMarket.dto.Request.AuctionCreateRequest;
 import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.dto.Request.AuctionUpdateRequest;
@@ -11,13 +10,11 @@ import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.AuctionMapper;
 import com.example.bidMarket.mapper.ProductMapper;
-import com.example.bidMarket.model.Auction;
-import com.example.bidMarket.model.Product;
-import com.example.bidMarket.repository.AuctionRepository;
-import com.example.bidMarket.repository.ProductImageRepository;
-import com.example.bidMarket.repository.ProductRepository;
-import com.example.bidMarket.repository.UserRepository;
+import com.example.bidMarket.model.*;
+import com.example.bidMarket.repository.*;
 import com.example.bidMarket.service.AuctionService;
+import com.example.bidMarket.service.BidService;
+import com.example.bidMarket.service.OrderService;
 import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,25 +24,34 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuctionServiceImpl implements AuctionService {
+    private final OrderRepository orderRepository;
 
+    private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final ProductRepository productRepository;
-    private final ProductImageRepository productImageRepository;
+    private final BidRepository bidRepository;
+
     private final AuctionMapper auctionMapper;
-    private final ProductMapper productMapper;
-    private final UserRepository userRepository;
+
     private final ProductService productService;
+    private final OrderService orderService;
+    private final BidService bidService;
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     public List<AuctionDto> getAllAuction() {
@@ -83,10 +89,62 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
+    @Scheduled(fixedRate = 60000) // update auction status open -> close every 1 minute
+    @Transactional
+    public void updateAuctionStatusOpenToClose() {
+        log.warn("Start update auction status open to close");
+        LocalDateTime now = LocalDateTime.now();
+        List<Auction> expiredAuctions = auctionRepository.findByEndTimeBeforeAndStatus(now, AuctionStatus.OPEN);
+        for (Auction auction : expiredAuctions) {
+            log.warn("Close auction id: " + auction.getId());
+            closeAuction(auction.getId());
+            messagingTemplate.convertAndSend("/topic/auction-status", auction);
+        }
+    }
+
+    @Override
+    @Transactional
+    @Scheduled(fixedRate = 86400000) // Update 1 time each day
+    public void syncBidCountOfAuction() {
+        log.warn("Start auto calculate bid count");
+        List<Auction> auctions = auctionRepository.findAll();
+        if (auctions.isEmpty()) return;
+
+        for (Auction auction : auctions) {
+            long bidCount = bidService.getBidCountOfAuction(auction.getId());
+
+            if (bidCount != auction.getBidCount()){
+                auction.setBidCount(bidCount);
+                auctionRepository.save(auction);
+            }
+        }
+    }
+
+    @Override
     @Transactional
     public AuctionDto createAuction(AuctionCreateRequest auctionCreateRequest) throws Exception {
-        // Tạo Product entity từ DTO
-        Product product = productService.createProduct(auctionCreateRequest.getProductCreateRequest());
+        if (auctionCreateRequest.getStartTime().isBefore(LocalDateTime.now().plusMinutes(30))) {
+            log.error("Time start auction must be at least 30 minutes after the current time");
+            throw new AppException(ErrorCode.AUCTION_CREATION_FAILED);
+        }
+
+        Product product;
+
+        // Kiểm tra xem sản phẩm đã tồn tại hay chưa
+        if (auctionCreateRequest.getProductCreateRequest().getProductId() != null) {
+            // Lấy sản phẩm từ cơ sở dữ liệu
+            product = productRepository.findById(auctionCreateRequest.getProductCreateRequest().getProductId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+            // Kiểm tra trạng thái sản phẩm
+            if (product.getStatus() != ProductStatus.INACTIVE) {
+                log.error("Product is not in an INACTIVE state");
+                throw new AppException(ErrorCode.PRODUCT_NOT_AVAILABLE);
+            }
+        } else {
+            // Nếu không có productId, tạo một sản phẩm mới
+            product = productService.createProduct(auctionCreateRequest.getProductCreateRequest());
+        }
 
         // Tạo phiên đấu giá từ DTO và product đã được lưu
         Auction auction = auctionMapper.auctionCreateToAuction(auctionCreateRequest, product);
@@ -94,17 +152,6 @@ public class AuctionServiceImpl implements AuctionService {
 
         AuctionDto auctionDto = auctionMapper.auctionToAuctionDto(auction);
         return auctionDto;
-    }
-
-    @Override
-    @Transactional
-    public AuctionDto changeAuctionStatus(UUID id, AuctionStatus status) throws Exception {
-        Auction auction = auctionRepository.findById(id).orElseThrow(() -> new Exception("Not found auction id"));
-        if (auction.getStatus() == AuctionStatus.COMPLETED || auction.getStatus() == AuctionStatus.CLOSED) {
-            throw new Exception("Auction was completed or canceled, so can't change status");
-        }
-        auction.setStatus(status);
-        return auctionMapper.auctionToAuctionDto(auctionRepository.save(auction));
     }
 
     @Override
@@ -154,30 +201,60 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
+    @Transactional
     public void openAuction(UUID id) {
         Auction auction = auctionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
-        if (auction.getStatus() == AuctionStatus.PENDING){
-            if (auction.getStartTime().isBefore(LocalDateTime.now())){
-                throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
-            }
-            auction.setStatus(AuctionStatus.OPEN);
-            Product product = auction.getProduct();
-            product.setStatus(ProductStatus.ACTIVE);
-            auctionRepository.save(auction);
-            productRepository.save(product);
-        }else {
+
+        if (auction.getStatus() != AuctionStatus.PENDING) {
+            log.error("Auction status is not PENDING");
             throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
         }
+
+        if (!auction.getStartTime().isAfter(LocalDateTime.now())) {
+            log.error("Time starting auction is invalid");
+            throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
+        }
+
+        Product product = auction.getProduct();
+        if (product == null || product.getStatus() != ProductStatus.INACTIVE) {
+            log.error("Product of this auction was ACTIVE");
+            throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
+        }
+
+        auction.setStatus(AuctionStatus.OPEN);
+        product.setStatus(ProductStatus.ACTIVE);
+
+        auctionRepository.save(auction);
+        productRepository.save(product);
     }
 
     @Override
-    public void closeAuction(UUID id) {
-        Auction auction = auctionRepository.findById(id)
+    @Transactional
+    public void closeAuction(UUID auctionId) {
+        Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
         if (auction.getStatus() == AuctionStatus.OPEN){
             auction.setStatus(AuctionStatus.CLOSED);
             auctionRepository.save(auction);
+
+            Optional <Bid> winBid = bidRepository.findFirstByAuctionIdAndStatusOrderByBidAmountDesc(auction.getId(), BidStatus.VALID);
+            if (winBid.isEmpty()){
+//                throw new AppException(ErrorCode.AUCTION_NOT_HAVE_BID);
+                log.warn("Auction no have winner");
+                return;
+            }
+
+            Bid bid = winBid.get();
+            OrderDto orderDto = OrderDto.builder()
+                    .userId(bid.getUserId())
+                    .auctionId(auction.getId())
+                    .totalAmount(bid.getBidAmount())
+                    .paymentDueDate(LocalDateTime.now().plusDays(5)) // Hard code: payment due date is 5 days from created order date.
+                    .status(OrderStatus.PENDING)
+                    .build();
+            // Create order
+            orderService.createOrder(orderDto);
         }else {
             throw new AppException(ErrorCode.AUCTION_CLOSE_FAILED);
         }
@@ -191,6 +268,14 @@ public class AuctionServiceImpl implements AuctionService {
             auction.setStatus(AuctionStatus.CANCELED);
             Product product = auction.getProduct();
             product.setStatus(ProductStatus.INACTIVE);
+
+            // Cancel order
+            Optional<Order> order = orderRepository.findByAuctionId(auction.getId());
+            if (order.isPresent() && order.get().getStatus() == OrderStatus.PENDING) {
+                Order orderValue = order.get();
+                orderValue.setStatus(OrderStatus.CANCELED);
+                orderRepository.save(orderValue);
+            }
             auctionRepository.save(auction);
             productRepository.save(product);
         }else {

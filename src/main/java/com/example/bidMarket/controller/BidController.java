@@ -1,15 +1,20 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.KafkaService.BidProducer;
+import com.example.bidMarket.SearchService.PaginatedResponse;
+import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
 import com.example.bidMarket.service.BidService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/bids")
@@ -21,12 +26,28 @@ public class BidController {
 
     @PostMapping
     public ResponseEntity<?> placeBid(@RequestBody BidCreateRequest bidCreateRequest) {
-        try {
-            bidProducer.sendBidRequest(bidCreateRequest);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return ResponseEntity.ok("Successful");
+        bidProducer.sendBidRequest(bidCreateRequest);
+        return ResponseEntity.ok("Send bid to kafka sucessfully");
     }
 
+    @GetMapping("/{auctionId}/bids")
+    public PaginatedResponse<BidDto> getBidsHistoryOfAuction(
+            @PathVariable UUID auctionId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "VALID") BidStatus status,
+            @RequestParam(defaultValue = "bidTime") String sortField,
+            @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
+
+        Page<BidDto> bidDtos = bidService.getBidsOfAuction(auctionId, page, size,status, sortField, direction);
+        return new PaginatedResponse<>(
+                bidDtos.getNumber(),
+                bidDtos.getSize(),
+                bidDtos.getTotalElements(),
+                bidDtos.getTotalPages(),
+                bidDtos.isLast(),
+                bidDtos.isFirst(),
+                bidDtos.stream().toList()
+        );
+    }
 }

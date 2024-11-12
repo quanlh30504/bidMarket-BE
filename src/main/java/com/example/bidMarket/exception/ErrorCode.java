@@ -10,6 +10,9 @@ public enum ErrorCode {
     USER_UNAUTHORIZED(1006, "User unauthorized"),
     USER_ACCOUNT_LOCKED(1007, "User account is locked"),
     USER_ROLE_INVALID(1008, "Invalid user role"),
+    EMAIL_ALREADY_EXIST(1009, "Email already exists"),
+    USER_WAS_VERIFIED(1010, "Email already verified"),
+    USED_IS_NOT_VERIFIED(1011, "Email is not verified"),
 
     // Validation errors (2xxx)
     INVALID_REQUEST(2001, "Invalid request format"),
@@ -45,6 +48,7 @@ public enum ErrorCode {
     AUCTION_COMPLETE_FAILED(5010, "Failed to complete auction"),
     AUCTION_CANCEL_FAILED(5011, "Failed to cancel auction"),
     AUCTION_REOPEN_FAILED(5012, "Failed to reopen auction"),
+    AUCTION_NOT_HAVE_BID(5013,"Auction don't have any bid"),
 
     // Bid-related errors (6xxx)
     BID_NOT_FOUND(6001, "Bid not found"),
@@ -52,7 +56,7 @@ public enum ErrorCode {
     BID_ALREADY_PLACED(6003, "Bid has already been placed"),
     BID_CREATION_FAILED(6004, "Failed to place bid"),
     BID_UPDATE_FAILED(6005, "Failed to update bid"),
-    BID_REJECTED_DUE_TO_CLOSURE(6006, "Bid rejected because the auction is closed"),
+    BID_IS_REJECTED(6006, "Bid is rejected because the auction is not open"),
 
     // Profile-related errors (7xxx)
     PROFILE_NOT_FOUND(7001, "Profile not found"),
@@ -67,6 +71,7 @@ public enum ErrorCode {
     PRODUCT_DELETION_FAILED(8004, "Failed to delete product"),
     PRODUCT_OUT_OF_STOCK(8005, "Product is out of stock"),
     PRODUCT_ALREADY_LISTED(8006, "Product is already listed for auction"),
+    PRODUCT_NOT_AVAILABLE(8007, "Product is not available because product is active"),
 
     // System errors (9xxx)
     SYSTEM_ERROR(9001, "System error occurred"),
@@ -80,7 +85,7 @@ public enum ErrorCode {
     FILE_NOT_FOUND(10002, "File not found"),
     FILE_FORMAT_UNSUPPORTED(10003, "Unsupported file format"),
     FILE_TOO_LARGE(10004, "File size exceeds the limit"),
-
+    FILE_DELETE_FAILED(10005, "Failed to delete file"),
     // Payment/Transaction errors (11xxx)
     PAYMENT_FAILED(11001, "Payment processing failed"),
     INSUFFICIENT_FUNDS(11002, "Insufficient funds"),
@@ -89,6 +94,11 @@ public enum ErrorCode {
 
     // Category
     CATEGORY_NOT_EXISTED(12001,"Category not existed"),
+
+    //Order
+    ORDER_NOT_FOUND(13001,"Order not found"),
+    ORDER_UPDATE_STATUS(13002, "Update status order failed"),
+
     // Uncategorized errors (9999)
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error");
 
