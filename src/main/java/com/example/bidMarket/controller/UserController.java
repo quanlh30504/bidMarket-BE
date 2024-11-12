@@ -45,12 +45,6 @@ public class UserController {
     }
 
     @PostMapping(value = "/signup")
-    public ResponseEntity<RegisterResponse> register(
-            @RequestPart("registerRequest") @Valid RegisterRequest registerRequest) throws Exception {
-
-        logger.info("Start sign up");
-
-    @PostMapping(value = "/signup")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) throws Exception {
         logger.info("Start sign up for user: {}", registerRequest.getEmail());
         RegisterResponse registerResponse = userService.createUser(registerRequest);
