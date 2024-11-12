@@ -1,13 +1,20 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.KafkaService.BidProducer;
+import com.example.bidMarket.SearchService.PaginatedResponse;
+import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
-import com.example.bidMarket.dto.Request.AutoPlaceBidRequest;
 import com.example.bidMarket.service.BidService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/bids")
@@ -18,32 +25,29 @@ public class BidController {
     private final BidProducer bidProducer;
 
     @PostMapping
-    public ResponseEntity<?> createBid(@RequestBody BidCreateRequest bidCreateRequest) {
+    public ResponseEntity<?> placeBid(@RequestBody BidCreateRequest bidCreateRequest) {
         bidProducer.sendBidRequest(bidCreateRequest);
         return ResponseEntity.ok("Send bid to kafka sucessfully");
     }
 
-    @PostMapping("/placeBid")
-    public ResponseEntity<String> autoPlaceBid(@RequestBody AutoPlaceBidRequest request) {
-        bidService.autoPlaceBid(request);
-        return ResponseEntity.ok("Bid placed successfully");
-    }
+    @GetMapping("/{auctionId}/bids")
+    public PaginatedResponse<BidDto> getBidsHistoryOfAuction(
+            @PathVariable UUID auctionId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "VALID") BidStatus status,
+            @RequestParam(defaultValue = "bidTime") String sortField,
+            @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
 
-//    @PostMapping("/placeBid")
-//    public ResponseEntity<?> placeBid(@RequestBody AutoPlaceBidRequest autoPlaceBidRequest) {
-//        if (autoPlaceBidRequest.isAutoBid() && autoPlaceBidRequest.getMaxBid() != null) {
-//            bidService.autoPlaceBid(autoPlaceBidRequest);
-//        } if (!autoPlaceBidRequest.isAutoBid() && autoPlaceBidRequest.getMaxBid() == null) {
-//            BidCreateRequest bidCreateRequest = new BidCreateRequest();
-//            bidCreateRequest.setAuctionId(autoPlaceBidRequest.getAuctionId());
-//            bidCreateRequest.setUserId(autoPlaceBidRequest.getUserId());
-//            bidCreateRequest.setBidAmount(autoPlaceBidRequest.getBidAmount());
-//            bidService.createBid(bidCreateRequest);
-//
-//            if (autoPlaceBidRequest.getMaxBid() != null) {
-//                autoPlaceBidRequest.setAutoBid(true);
-//            }
-//        }
-//        return ResponseEntity.ok("Bid processed successfully");
-//    }
+        Page<BidDto> bidDtos = bidService.getBidsOfAuction(auctionId, page, size,status, sortField, direction);
+        return new PaginatedResponse<>(
+                bidDtos.getNumber(),
+                bidDtos.getSize(),
+                bidDtos.getTotalElements(),
+                bidDtos.getTotalPages(),
+                bidDtos.isLast(),
+                bidDtos.isFirst(),
+                bidDtos.stream().toList()
+        );
+    }
 }

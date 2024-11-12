@@ -1,49 +1,49 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.exception.AppException;
+import com.example.bidMarket.exception.ErrorCode;
+import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.repository.VerifyEmailRepository;
 import com.example.bidMarket.service.EmailService;
 import com.example.bidMarket.service.VerifyEmailService;
-import com.example.bidMarket.utils.ChangePassword;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
-@RequestMapping("/verifyEmail")
-public class VerifyEmailController {
+@RequestMapping("/api/emails")
+@Slf4j
+public class EmailController {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final VerifyEmailRepository verifiyEmailRepository;
     private final VerifyEmailService verifyEmailService;
 
-    public VerifyEmailController(UserRepository userRepository, EmailService emailService,
-                                 VerifyEmailRepository verifiyEmailRepository, VerifyEmailService verifyEmailService) {
+    public EmailController(UserRepository userRepository, EmailService emailService,
+                           VerifyEmailRepository verifiyEmailRepository, VerifyEmailService verifyEmailService) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.verifiyEmailRepository = verifiyEmailRepository;
         this.verifyEmailService = verifyEmailService;
     }
 
-    @PostMapping("/forgotPassword/{email}")
-    public ResponseEntity<String> verifyEmailForgotPassword(@PathVariable String email) {
-            return verifyEmailService.verifyEmailForgotPassword(email);
+    // send opt to verify email
+    @PostMapping("/sendOtp/{email}")
+    public ResponseEntity<String> sendOtp(@PathVariable String email) {
+        return verifyEmailService.sendOtp(email);
     }
 
-    @PostMapping("/register/{email}")
-    public ResponseEntity<String> verifyEmailRegister(@PathVariable String email) {
-        return verifyEmailService.verifyEmailRegister(email);
+    @PostMapping("/register/verifyOtp/{otp}/{email}")
+    public ResponseEntity<String> verifyOtp(@PathVariable Integer otp, @PathVariable String email) {
+        return verifyEmailService.verifyOtp(otp, email);
     }
 
     @PostMapping("/forgotPassword/verifyOtp/{otp}/{email}")
     public ResponseEntity<String> verifyOtpForgotPassword(@PathVariable Integer otp, @PathVariable String email) {
         return verifyEmailService.verifyOtpForgotPassword(otp, email);
     }
-
-    @PostMapping("/forgotPassword/changePassword/{email}")
-    public ResponseEntity<String> changePasswordHandler(@RequestBody ChangePassword changePassword,
-                                                        @PathVariable String email) {
-        return verifyEmailService.changePasswordHandler(changePassword, email);
-    }
-
 }

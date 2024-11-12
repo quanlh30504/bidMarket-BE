@@ -8,6 +8,10 @@ import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.repository.WatchListRepository;
 import com.example.bidMarket.service.WatchListService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,18 +26,12 @@ public class WatchListServiceImpl implements WatchListService {
     private AuctionRepository auctionRepository;
 
     @Override
-    public List<WatchList> getWatchlistByUserId(UUID userId) throws Exception{
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return watchlistRepository.findByUserId(userId);
+    public Page<WatchList> getWatchlistByUserId(UUID userId, int page, int size, String sortBy, String sortDirection){
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return watchlistRepository.findAllByUserId(userId, pageable);
     }
 
-    @Override
-    public List<WatchList> getWatchlistByAuctionId(UUID auctionId) throws Exception {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
-        return watchlistRepository.findByAuctionId(auctionId);
-    }
     @Override
     public WatchList addToWatchlist(UUID userId, UUID auctionId) {
         // Tìm kiếm đối tượng User và Auction
@@ -56,4 +54,6 @@ public class WatchListServiceImpl implements WatchListService {
         // Logic to remove a watchlist item by id
         watchlistRepository.deleteById(id);
     }
+
+
 }

@@ -7,10 +7,12 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 public class AuctionSearchResponse {
+    private UUID id;
     private String title;
     private ProductDto productDto;
     private LocalDateTime startTime;
@@ -18,5 +20,6 @@ public class AuctionSearchResponse {
     private BigDecimal currentPrice;
     private BigDecimal startingPrice;
     private BigDecimal minimumBidIncrement;
+    private long bidCount;
     private int extensionCount;
 }

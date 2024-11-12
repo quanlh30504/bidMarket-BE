@@ -4,6 +4,7 @@ import com.example.bidMarket.dto.*;
 import com.example.bidMarket.dto.Request.LoginRequest;
 import com.example.bidMarket.dto.Request.RefreshTokenRequest;
 import com.example.bidMarket.dto.Request.RegisterRequest;
+import com.example.bidMarket.dto.Response.AccountInfo;
 import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
 import com.example.bidMarket.dto.Response.RegisterResponse;
 
@@ -19,6 +20,11 @@ public interface UserService {
     JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest);
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
 
+    void changePassword(String email, String currentPassword, String newPassword);
+    void changePasswordForgot(String newPassword, String email);
     ProfileDto getProfileByUserId(UUID userId);
     ProfileDto updateProfile(UUID userId, ProfileDto profileDto);
+    void updateAvatar(UUID userId, String imageUrl);
+    AccountInfo getAccountInfoByUserId(UUID userId);
+
 }

@@ -13,6 +13,7 @@ import com.example.bidMarket.mapper.ProductMapper;
 import com.example.bidMarket.model.*;
 import com.example.bidMarket.repository.*;
 import com.example.bidMarket.service.AuctionService;
+import com.example.bidMarket.service.BidService;
 import com.example.bidMarket.service.OrderService;
 import com.example.bidMarket.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -23,6 +24,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -46,6 +49,9 @@ public class AuctionServiceImpl implements AuctionService {
 
     private final ProductService productService;
     private final OrderService orderService;
+    private final BidService bidService;
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     public List<AuctionDto> getAllAuction() {
@@ -80,6 +86,38 @@ public class AuctionServiceImpl implements AuctionService {
         Page<Auction>auctions = auctionRepository.findAll(spec, pageable);
         return auctions;
 
+    }
+
+    @Override
+    @Scheduled(fixedRate = 60000) // update auction status open -> close every 1 minute
+    @Transactional
+    public void updateAuctionStatusOpenToClose() {
+        log.warn("Start update auction status open to close");
+        LocalDateTime now = LocalDateTime.now();
+        List<Auction> expiredAuctions = auctionRepository.findByEndTimeBeforeAndStatus(now, AuctionStatus.OPEN);
+        for (Auction auction : expiredAuctions) {
+            log.warn("Close auction id: " + auction.getId());
+            closeAuction(auction.getId());
+            messagingTemplate.convertAndSend("/topic/auction-status", auction);
+        }
+    }
+
+    @Override
+    @Transactional
+    @Scheduled(fixedRate = 86400000) // Update 1 time each day
+    public void syncBidCountOfAuction() {
+        log.warn("Start auto calculate bid count");
+        List<Auction> auctions = auctionRepository.findAll();
+        if (auctions.isEmpty()) return;
+
+        for (Auction auction : auctions) {
+            long bidCount = bidService.getBidCountOfAuction(auction.getId());
+
+            if (bidCount != auction.getBidCount()){
+                auction.setBidCount(bidCount);
+                auctionRepository.save(auction);
+            }
+        }
     }
 
     @Override
@@ -202,7 +240,9 @@ public class AuctionServiceImpl implements AuctionService {
 
             Optional <Bid> winBid = bidRepository.findFirstByAuctionIdAndStatusOrderByBidAmountDesc(auction.getId(), BidStatus.VALID);
             if (winBid.isEmpty()){
-                throw new AppException(ErrorCode.AUCTION_NOT_HAVE_BID);
+//                throw new AppException(ErrorCode.AUCTION_NOT_HAVE_BID);
+                log.warn("Auction no have winner");
+                return;
             }
 
             Bid bid = winBid.get();
@@ -275,29 +315,3 @@ public class AuctionServiceImpl implements AuctionService {
 
 
 }
-
-/*
-
-tôi cần tư vấn logic việc cancel của 1 auction, khi đó tôi đang áp dụng việc sẽ chuyển status của các order được tạo ra từ auction như code dưới, 1 order có các status là peding, paid, completed, cancel. Tuy nhiên logic xử lí order có thể còn xót và chưa tối ưu, hãy phân tích và cho giải pháp :
-    public void cancelAuction(UUID id) {
-        Auction auction = auctionRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
-        if (auction.getStatus() != AuctionStatus.COMPLETED){
-            auction.setStatus(AuctionStatus.CANCELED);
-            Product product = auction.getProduct();
-            product.setStatus(ProductStatus.INACTIVE);
-
-            // Cancel order
-            Optional<Order> order = orderRepository.findByAuctionId(auction.getId());
-            if (order.isPresent() && order.get().getStatus() == OrderStatus.PENDING) {
-                Order orderValue = order.get();
-                orderValue.setStatus(OrderStatus.CANCELED);
-                orderRepository.save(orderValue);
-            }
-            auctionRepository.save(auction);
-            productRepository.save(product);
-        }else {
-            throw new AppException(ErrorCode.AUCTION_CANCEL_FAILED);
-        }
-    }
- */

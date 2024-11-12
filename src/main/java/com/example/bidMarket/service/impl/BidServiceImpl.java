@@ -1,15 +1,16 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
-import com.example.bidMarket.dto.Request.AutoPlaceBidRequest;
 import com.example.bidMarket.dto.Response.BidCreateResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.BidMapper;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Bid;
+import com.example.bidMarket.model.Payment;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.AuctionRepository;
 import com.example.bidMarket.repository.BidRepository;
@@ -19,13 +20,14 @@ import com.example.bidMarket.service.BidService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,11 +44,11 @@ public class BidServiceImpl implements BidService {
 
     @Override
     @Transactional
-    public BidCreateResponse createBid(BidCreateRequest bidCreateRequest) {
+    public BidCreateResponse createBid(BidCreateRequest bidCreateRequest) throws Exception {
         User user = userRepository.findById(bidCreateRequest.getUserId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new Exception("Not existed user id " + bidCreateRequest.getUserId()));
         Auction auction = auctionRepository.findById(bidCreateRequest.getAuctionId())
-                .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
+                .orElseThrow(() -> new Exception("Not exited auction id " + bidCreateRequest.getAuctionId()));
         Bid bid = Bid.builder()
                 .userId(bidCreateRequest.getUserId())
                 .auction(auction)
@@ -102,6 +104,7 @@ public class BidServiceImpl implements BidService {
     }
 
     // Service này lấy tat ca cac bid cua auction (Valid và Invalid)
+    // Test
     @Override
     public Page<BidDto> getAllBidsOfAuction(UUID auctionId, int page, int size, String sortField, Sort.Direction direction) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
@@ -125,71 +128,11 @@ public class BidServiceImpl implements BidService {
             log.warn("No valid bids found for auction ID: " + auctionId);
             throw new AppException(ErrorCode.BID_NOT_FOUND);
         }
-
         return bids.map(bidMapper::bidToBidDto);
-
     }
 
     @Override
-    @Transactional
-    public void autoPlaceBid(AutoPlaceBidRequest autoPlaceBidRequest) {
-        Auction auction = auctionRepository.findById(autoPlaceBidRequest.getAuctionId())
-                .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
-
-        // Nếu maxBid null hoặc người dùng không chọn chế độ tự động hoặc maxBid <= BidAmount (lần đầu)
-        if (autoPlaceBidRequest.getMaxBid() == null || !autoPlaceBidRequest.isAutoBid()
-                || autoPlaceBidRequest.getMaxBid().compareTo(autoPlaceBidRequest.getBidAmount()) <= 0) {
-
-            // Khi người dùng muốn đặt giá thủ công lượt này
-            if (autoPlaceBidRequest.getMaxBid() != null &&
-                    autoPlaceBidRequest.getMaxBid().compareTo(autoPlaceBidRequest.getBidAmount()) > 0) {
-                autoPlaceBidRequest.setAutoBid(true);
-                // Check nếu ra giá < giá cao nhất -> lỗi
-                Bid highestBid = bidRepository.findHighestBidByAuctionId(autoPlaceBidRequest.getAuctionId());
-
-                if (highestBid != null && autoPlaceBidRequest.getBidAmount().compareTo(highestBid.getBidAmount()) <= 0) {
-                    throw new AppException(ErrorCode.BID_TOO_LOW);
-                }
-            }
-
-            Bid newBid = Bid.builder()
-                    .auction(auction)
-                    .userId(autoPlaceBidRequest.getUserId())
-                    .bidAmount(autoPlaceBidRequest.getBidAmount())
-                    .maxBid(autoPlaceBidRequest.getMaxBid())
-                    .build();
-            bidRepository.save(newBid);
-
-
-            return;
-        }
-
-        // Khi maxBid có, MaxBid phải > BidAmount
-        if (autoPlaceBidRequest.getMaxBid().compareTo(autoPlaceBidRequest.getBidAmount()) <= 0) {
-            throw new AppException(ErrorCode.MAX_BID_TOO_LOW);
-        }
-
-        if (autoPlaceBidRequest.isAutoBid()) {
-            checkAndPlaceAutoBid(auction, autoPlaceBidRequest.getUserId(), autoPlaceBidRequest.getMaxBid());
-        }
-    }
-
-    private void checkAndPlaceAutoBid(Auction auction, UUID userId, BigDecimal maxBid) {
-        Bid highestBid = bidRepository.findHighestBidByAuctionId(auction.getId());
-
-        if (highestBid != null && highestBid.getUserId().equals(userId)) {
-            return;
-        }
-
-        BigDecimal newBidAmount = highestBid.getBidAmount().add(new BigDecimal("10.00")); // Tăng thêm 10
-        if (newBidAmount.compareTo(maxBid) <= 0) {
-            Bid autoBid = Bid.builder()
-                    .auction(auction)
-                    .userId(userId)
-                    .bidAmount(newBidAmount)
-                    .maxBid(maxBid)
-                    .build();
-            bidRepository.save(autoBid);
-        }
+    public long getBidCountOfAuction(UUID auctionId) {
+        return bidRepository.countByAuctionIdAndStatus(auctionId, BidStatus.VALID);
     }
 }

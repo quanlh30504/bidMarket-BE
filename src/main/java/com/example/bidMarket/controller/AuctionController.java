@@ -20,8 +20,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -41,8 +43,12 @@ public class AuctionController {
     public ResponseEntity<AuctionDto> createAuction (@RequestBody AuctionCreateRequest request) throws Exception {
         return ResponseEntity.ok(auctionService.createAuction(request));
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<AuctionDto> updateAuction(@PathVariable UUID id, @RequestBody AuctionUpdateRequest request){
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AuctionDto> updateAuction(
+            @PathVariable UUID id,
+            @RequestPart AuctionUpdateRequest request,
+            @RequestPart(value = "newImages", required = false) MultipartFile newImages) throws Exception {
         Auction auction = auctionService.updateAuction(id, request);
         return ResponseEntity.ok(auctionMapper.auctionToAuctionDto(auction));
     }
@@ -108,28 +114,6 @@ public class AuctionController {
     public ResponseEntity<String> reOpenAuction(@PathVariable UUID id, @RequestBody AuctionUpdateRequest auctionUpdateRequest) {
         auctionService.reOpenAuction(id, auctionUpdateRequest);
         return ResponseEntity.ok("Reopen successfully auction " + id);
-    }
-
-    @GetMapping("/{auctionId}/bids")
-    public PaginatedResponse<BidDto> getBidsHistoryOfAuction(
-            @PathVariable UUID auctionId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "VALID") BidStatus status,
-            @RequestParam(defaultValue = "bidTime") String sortField,
-            @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
-
-        Page<BidDto> bidDtos = bidService.getBidsOfAuction(auctionId, page, size,status, sortField, direction);
-        return new PaginatedResponse<>(
-                bidDtos.getNumber(),
-                bidDtos.getSize(),
-                bidDtos.getTotalElements(),
-                bidDtos.getTotalPages(),
-                bidDtos.isLast(),
-                bidDtos.isFirst(),
-                bidDtos.stream().toList()
-        );
-
     }
 }
 

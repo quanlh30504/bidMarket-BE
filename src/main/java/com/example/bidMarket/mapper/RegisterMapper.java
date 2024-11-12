@@ -38,7 +38,7 @@ public class RegisterMapper {
 
     public IdCard requestToIdCard(User user, RegisterRequest request) {
         return IdCard.builder()
-                .user(user)  // Gán user đã tạo trước đó
+                .user(user)
                 .idCard(request.getIdCard())
 //                .frontImageURL(request.getFrontImage())
 //                .backImageURL(request.getBackImage())
@@ -53,13 +53,9 @@ public class RegisterMapper {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .fullName(user.getProfile().getFullName())
-                .phoneNumber(user.getProfile().getPhoneNumber())
-                .profileImageUrl(user.getProfile().getProfileImageUrl()).build();
+                .phoneNumber(user.getProfile().getPhoneNumber()).build();
 
         if (user.getRole() == Role.SELLER && user.getIdCard() != null) {
-            registerResponse.setIdCard(user.getIdCard().getIdCard());
-            registerResponse.setFrontImageURL(user.getIdCard().getFrontImageURL());
-            registerResponse.setBackImageURL(user.getIdCard().getBackImageURL());
             registerResponse.setIssuedDate(user.getIdCard().getIssuedDate());
             registerResponse.setExpirationDate(user.getIdCard().getExpirationDate());
         }

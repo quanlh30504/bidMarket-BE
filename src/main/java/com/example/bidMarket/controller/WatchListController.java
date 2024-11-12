@@ -1,8 +1,12 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.SearchService.PaginatedResponse;
+import com.example.bidMarket.dto.Response.WatchListResponse;
+import com.example.bidMarket.mapper.WatchListMapper;
 import com.example.bidMarket.model.WatchList;
 import com.example.bidMarket.service.impl.WatchListServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,15 +22,27 @@ public class WatchListController {
     private WatchListServiceImpl watchlistService;
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<WatchList>> getUserWatchlist(@PathVariable UUID userId) throws Exception {
-        List<WatchList> watchlist = watchlistService.getWatchlistByUserId(userId);
-        return ResponseEntity.ok(watchlist);
-    }
+    public PaginatedResponse<WatchListResponse> getWatchListByUserId(
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
 
-    @GetMapping("/auction/{auctionId}")
-    public ResponseEntity<List<WatchList>> getAuctionWatchlist(@PathVariable UUID auctionId) throws Exception {
-        List<WatchList> watchlist = watchlistService.getWatchlistByAuctionId(auctionId);
-        return ResponseEntity.ok(watchlist);
+    ) {
+        Page<WatchList> watchListPage = watchlistService.getWatchlistByUserId(userId, page, size, sortBy, sortDirection);
+        List<WatchListResponse> content = watchListPage.getContent().stream()
+                .map(WatchListMapper::watchlistToWatchlistResponse)
+                .toList();
+        return new PaginatedResponse<>(
+                watchListPage.getNumber(),
+                watchListPage.getSize(),
+                watchListPage.getTotalElements(),
+                watchListPage.getTotalPages(),
+                watchListPage.isLast(),
+                watchListPage.isFirst(),
+                content
+        );
     }
 
     @PostMapping("/add")

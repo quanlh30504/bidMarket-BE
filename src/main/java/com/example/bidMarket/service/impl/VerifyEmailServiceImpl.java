@@ -7,7 +7,6 @@ import com.example.bidMarket.repository.VerifyEmailRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.EmailService;
 import com.example.bidMarket.service.VerifyEmailService;
-import com.example.bidMarket.utils.ChangePassword;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,32 +31,7 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
     private VerifyEmailRepository verifyEmailRepository;
 
     @Override
-    public ResponseEntity<String> verifyEmailForgotPassword(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address" + email));
-
-        verifyEmailRepository.findByUser(user).ifPresent(verifyEmailRepository::delete);
-
-        int otp = otpGenerator();
-        MailBody mailBody = MailBody.builder()
-                .to(email)
-                .subject("OTP for Forgot Password request")
-                .text("This is the OTP for your Forgot Password request: " + otp)
-                .build();
-
-        VerifyEmail fp = VerifyEmail.builder()
-                .otp(otp)
-                .expirationTime(new Date(System.currentTimeMillis() + 70 * 1000))
-                .user(user)
-                .build();
-
-        emailService.sendSimpleMessage(mailBody);
-        verifyEmailRepository.save(fp);
-        return ResponseEntity.ok("Email sent for verification");
-    }
-
-    @Override
-    public ResponseEntity<String> verifyEmailRegister(String email) {
+    public ResponseEntity<String> sendOtp(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address" + email));
 
@@ -67,7 +41,7 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
         MailBody mailBody = MailBody.builder()
                 .to(email)
                 .subject("OTP for Verify Email request")
-                .text("This is the OTP for your Verify Email request: " + otp)
+                .text("This is the OTP: " + otp)
                 .build();
 
         VerifyEmail fp = VerifyEmail.builder()
@@ -78,11 +52,11 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
 
         emailService.sendSimpleMessage(mailBody);
         verifyEmailRepository.save(fp);
-        return ResponseEntity.ok("Email sent for verification");
+        return ResponseEntity.ok("Email sent successfully");
     }
 
     @Override
-    public ResponseEntity<String> verifyOtpRegister(Integer otp, String email) {
+    public ResponseEntity<String> verifyOtp(Integer otp, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address"));
 
@@ -113,20 +87,6 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
 
         verifyEmailRepository.deleteById(fp.getId());
         return ResponseEntity.ok("OTP verified successfully");
-    }
-
-    @Override
-    public ResponseEntity<String> changePasswordHandler(ChangePassword changePassword, String email) {
-        if (!Objects.equals(changePassword.password(), changePassword.repeatPassword())) {
-            return new ResponseEntity<>("Passwords do not match", HttpStatus.BAD_REQUEST);
-        }
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address"));
-
-        userRepository.updatePassword(user, changePassword.password());
-
-        return ResponseEntity.ok("Password changed successfully");
     }
 
     private Integer otpGenerator() {
