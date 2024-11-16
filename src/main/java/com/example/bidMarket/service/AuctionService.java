@@ -29,7 +29,7 @@ public interface AuctionService {
     public AuctionDto getAuctionById(UUID id);
 
     public Page<Auction> searchAuctions(String title,
-                                       CategoryType categoryType,
+                                        List<CategoryType> categoryType,
                                        AuctionStatus status,
                                        BigDecimal minPrice,
                                        BigDecimal maxPrice,

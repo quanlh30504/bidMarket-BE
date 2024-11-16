@@ -70,14 +70,14 @@ public class AuctionServiceImpl implements AuctionService {
 
     @Override
     public Page<Auction> searchAuctions(String title,
-                                        CategoryType categoryType,
+                                        List<CategoryType> categoryType,
                                         AuctionStatus status,
                                         BigDecimal minPrice, BigDecimal maxPrice,
                                         LocalDateTime startTime, LocalDateTime endTime,
                                         int page, int size, String sortField, Sort.Direction sortDirection) {
         Specification<Auction> spec = Specification
                 .where(AuctionSpecification.hasTitle(title))
-                .and(AuctionSpecification.hasCategoryType(categoryType))
+                .and(AuctionSpecification.hasCategoryTypes(categoryType))
                 .and(AuctionSpecification.hasStatus(status))
                 .and(AuctionSpecification.hasPriceBetween(minPrice, maxPrice))
                 .and(AuctionSpecification.hasStartTimeBetween(startTime, endTime));
@@ -119,6 +119,20 @@ public class AuctionServiceImpl implements AuctionService {
             }
         }
     }
+
+    // Auto open auction : ready to open
+    @Scheduled(fixedRate = 60000)
+    public void autoOpenAuctions() {
+        List<Auction> readyAuctions = auctionRepository.findByStatus(AuctionStatus.READY);
+        for (Auction auction : readyAuctions) {
+            if (auction.getStartTime().isBefore(LocalDateTime.now())) {
+                auction.setStatus(AuctionStatus.OPEN);
+                auctionRepository.save(auction);
+                log.info("Auction {} is now OPEN.", auction.getId());
+            }
+        }
+    }
+
 
     @Override
     @Transactional
@@ -207,26 +221,32 @@ public class AuctionServiceImpl implements AuctionService {
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
 
         if (auction.getStatus() != AuctionStatus.PENDING) {
-            log.error("Auction status is not PENDING");
+            log.error("Auction status is not PENDING, current status: {}", auction.getStatus());
             throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
         }
 
-        if (!auction.getStartTime().isAfter(LocalDateTime.now())) {
-            log.error("Time starting auction is invalid");
-            throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
+        if (auction.getStartTime().isAfter(LocalDateTime.now())) {
+            auction.setStatus(AuctionStatus.READY);
+            log.info("Auction {} is READY and will OPEN at: {}", auction.getId(), auction.getStartTime());
+        } else {
+            auction.setStatus(AuctionStatus.OPEN);
+            log.info("Auction {} is now OPEN.", auction.getId());
         }
 
         Product product = auction.getProduct();
         if (product == null || product.getStatus() != ProductStatus.INACTIVE) {
-            log.error("Product of this auction was ACTIVE");
+            log.error("Product is in invalid state. Product status: {}",
+                    product != null ? product.getStatus() : "null");
             throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
         }
-
-        auction.setStatus(AuctionStatus.OPEN);
         product.setStatus(ProductStatus.ACTIVE);
 
-        auctionRepository.save(auction);
-        productRepository.save(product);
+        // Không cần gọi save nếu sử dụng Spring Data JPA + Hibernate với annotation @Transaction
+//        auctionRepository.save(auction);
+//        productRepository.save(product);
+
+        log.info("Auction {} is now OPEN. Product {} is ACTIVE.",
+                auction.getId(), product.getId());
     }
 
     @Override

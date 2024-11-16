@@ -64,6 +64,7 @@ public class BidServiceImpl implements BidService {
     @Override
     @Transactional
     public void processBid(BidCreateRequest bidRequest) {
+        log.info("Start process bid");
         Optional<Auction> auctionOpt = auctionRepository.findById(bidRequest.getAuctionId());
         if (auctionOpt.isEmpty()) {
             throw new IllegalArgumentException("Auction not found");

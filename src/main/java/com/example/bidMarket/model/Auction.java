@@ -52,9 +52,6 @@ public class Auction {
     @Column(name = "extension_count", nullable = false)
     private int extensionCount  = 0;
 
-    @Version
-    private int version;
-
     @Column(name = "bid_count", nullable = false)
     private long bidCount = 0;
 

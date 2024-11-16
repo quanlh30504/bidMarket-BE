@@ -85,6 +85,7 @@ public class UserController {
 
     @PostMapping("/refresh-token")
     public ResponseEntity<JwtAuthenticationResponse> refreshToken(@CookieValue("refreshToken") String refreshToken) {
+        logger.info("Refresh token");
         JwtAuthenticationResponse response = userService.refreshToken(new RefreshTokenRequest(refreshToken));
         return ResponseEntity.ok(response);
     }

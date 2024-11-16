@@ -16,5 +16,5 @@ public class BidCreateRequest {
     private UUID userId;
     private UUID auctionId;
     private BigDecimal bidAmount;
-    private LocalDateTime bidTime;
+    private LocalDateTime bidTime = LocalDateTime.now();
 }
