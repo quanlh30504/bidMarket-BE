@@ -8,7 +8,15 @@ import com.example.bidMarket.model.Product;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.UUID;
+
 public class ProductSpecification {
+    public static Specification<Product> hasSellerId(UUID sellerId) {
+        return ((root, query, criteriaBuilder) ->
+                sellerId == null ? null : criteriaBuilder.equal((root.get("seller").get("id")), sellerId)
+        );
+    }
+
 
     public static Specification<Product> hasName(String name) {
         return (root, query, criteriaBuilder) -> {

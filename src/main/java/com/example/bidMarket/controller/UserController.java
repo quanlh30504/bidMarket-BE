@@ -1,6 +1,8 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.MQTemplate.EmailProvider;
 import com.example.bidMarket.dto.*;
+import com.example.bidMarket.dto.Request.EmailRequest;
 import com.example.bidMarket.dto.Request.LoginRequest;
 import com.example.bidMarket.dto.Request.RefreshTokenRequest;
 import com.example.bidMarket.dto.Request.RegisterRequest;
@@ -35,20 +37,22 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final VerifyEmailService verifyEmailService;
+    private final EmailProvider emailProvider;
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    public UserController(UserService userService, UserRepository userRepository, VerifyEmailService verifyEmailService) {
+    public UserController(UserService userService, UserRepository userRepository, VerifyEmailService verifyEmailService, EmailProvider emailProvider) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.verifyEmailService = verifyEmailService;
+        this.emailProvider = emailProvider;
     }
 
     @PostMapping(value = "/signup")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) throws Exception {
         logger.info("Start sign up for user: {}", registerRequest.getEmail());
         RegisterResponse registerResponse = userService.createUser(registerRequest);
-        verifyEmailService.sendOtp(registerRequest.getEmail());
+        emailProvider.sendEmailOTPRequest(EmailRequest.builder().email(registerRequest.getEmail()).build());
         return ResponseEntity.ok(registerResponse);
     }
 
@@ -163,7 +167,7 @@ public class UserController {
 
     @PostMapping("/forgotPassword/{email}")
     public ResponseEntity<String> forgotPasswordHandler(@PathVariable String email) {
-        verifyEmailService.sendOtp(email);
+        emailProvider.sendEmailOTPRequest(EmailRequest.builder().email(email).build());
         return ResponseEntity.ok("Email sent successfully");
     }
 

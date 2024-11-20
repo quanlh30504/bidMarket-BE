@@ -66,6 +66,7 @@ public class AuctionController {
 
     @GetMapping("/search")
     public PaginatedResponse<AuctionSearchResponse> searchAuctions(
+            @RequestParam(required = false) UUID sellerId,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) List<String> categoryType,
             @RequestParam(required = false) AuctionStatus status,
@@ -85,7 +86,7 @@ public class AuctionController {
         }
 
         log.info("Start search auction");
-        Page<Auction> auctions = auctionService.searchAuctions(title, categoryTypeList, status, minPrice, maxPrice, startTime, endTime, page, size, sortField, sortDirection);
+        Page<Auction> auctions = auctionService.searchAuctions(sellerId, title, categoryTypeList, status, minPrice, maxPrice, startTime, endTime, page, size, sortField, sortDirection);
         List<AuctionSearchResponse> content = auctions.getContent().stream().map(auctionMapper::auctionToAuctionSearchResponse).toList();
 
         return new PaginatedResponse<>(
@@ -98,6 +99,10 @@ public class AuctionController {
                 content
         );
     }
+
+    @GetMapping("/{sellerId}/search")
+
+
 
     @PutMapping("/close/{auctionId}")
     public ResponseEntity<String> closeAuction(@PathVariable UUID auctionId) {

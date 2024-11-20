@@ -66,6 +66,7 @@ public class AuctionMapper {
     }
     public AuctionSearchResponse auctionToAuctionSearchResponse(Auction auction) {
         AuctionSearchResponse response = AuctionSearchResponse.builder()
+                .id(auction.getId())
                 .title(auction.getTitle())
                 .productDto(productMapper.productToProductDto(auction.getProduct()))
                 .startTime(auction.getStartTime())

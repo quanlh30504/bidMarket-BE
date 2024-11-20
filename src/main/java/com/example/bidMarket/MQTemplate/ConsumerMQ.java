@@ -1,7 +1,10 @@
 package com.example.bidMarket.MQTemplate;
 
 import com.example.bidMarket.dto.Request.BidCreateRequest;
+import com.example.bidMarket.dto.Request.EmailRequest;
 import com.example.bidMarket.service.BidService;
+import com.example.bidMarket.service.EmailService;
+import com.example.bidMarket.service.impl.VerifyEmailServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,8 @@ public class ConsumerMQ implements Runnable {
 
     @Autowired
     private BidService bidService;
+    @Autowired
+    private VerifyEmailServiceImpl verifyEmailService;
 
     private final MessageQueueTemplate<Object> messageQueue;
 
@@ -27,7 +32,7 @@ public class ConsumerMQ implements Runnable {
 
         // Định nghĩa các topic và kiểu dữ liệu của chúng
         topicTypeMapping.put("bid_request", BidCreateRequest.class);
-//        topicTypeMapping.put("notifications", Notification.class);
+        topicTypeMapping.put("email_OTP_request", EmailRequest.class);
         // Thêm các topic khác và kiểu dữ liệu của chúng tại đây
     }
 
@@ -57,10 +62,10 @@ public class ConsumerMQ implements Runnable {
     private void processMessage(Object message, Class<?> messageType) {
         if (messageType == BidCreateRequest.class) {
             bidService.processBid((BidCreateRequest) message);
+        } else if (messageType == EmailRequest.class) {
+            EmailRequest emailRequest = (EmailRequest) message;
+            verifyEmailService.sendOtp(emailRequest.getEmail());
         }
-//        } else if (messageType == Notification.class) {
-//            processNotification((Notification) message);
-//        }
         // Thêm các trường hợp xử lý khác tương ứng với các topic
     }
 

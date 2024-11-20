@@ -69,14 +69,16 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
-    public Page<Auction> searchAuctions(String title,
+    public Page<Auction> searchAuctions(UUID sellerId,
+                                        String title,
                                         List<CategoryType> categoryType,
                                         AuctionStatus status,
                                         BigDecimal minPrice, BigDecimal maxPrice,
                                         LocalDateTime startTime, LocalDateTime endTime,
                                         int page, int size, String sortField, Sort.Direction sortDirection) {
         Specification<Auction> spec = Specification
-                .where(AuctionSpecification.hasTitle(title))
+                .where(AuctionSpecification.hasSellerId(sellerId))
+                .and(AuctionSpecification.hasTitle(title))
                 .and(AuctionSpecification.hasCategoryTypes(categoryType))
                 .and(AuctionSpecification.hasStatus(status))
                 .and(AuctionSpecification.hasPriceBetween(minPrice, maxPrice))
@@ -87,6 +89,7 @@ public class AuctionServiceImpl implements AuctionService {
         return auctions;
 
     }
+
 
     @Override
     @Scheduled(fixedRate = 60000) // update auction status open -> close every 1 minute

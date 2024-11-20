@@ -46,6 +46,7 @@ public class ProductController {
 
     @GetMapping("/search")
     public PaginatedResponse<ProductDto> searchProducts(
+            @RequestParam(required = false) UUID sellerId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) CategoryType categoryType,
             @RequestParam(required = false) ProductStatus status,
@@ -54,7 +55,7 @@ public class ProductController {
             @RequestParam(defaultValue = "createdAt") String sortField,
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDirection) {
 
-        Page<Product> productPage = productService.searchProducts(name, categoryType, status, page, size, sortField, sortDirection);
+        Page<Product> productPage = productService.searchProducts(sellerId, name, categoryType, status, page, size, sortField, sortDirection);
         List<ProductDto> content = productPage.getContent().stream()
                 .map(productMapper::productToProductDto)
                 .toList();

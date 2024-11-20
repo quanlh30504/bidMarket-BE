@@ -49,7 +49,7 @@ public class SecurityConfig {
             "/api/products/**",
             "/api/messages/**",
             "/api/**",
-            "/emails/**",,
+            "/emails/**",
             "/api/users/refresh-token",
             "/api/users/logout"
     };

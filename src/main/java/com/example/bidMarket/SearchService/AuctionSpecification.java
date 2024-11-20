@@ -14,8 +14,15 @@ import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class AuctionSpecification {
+
+    public static Specification<Auction> hasSellerId(UUID sellerId) {
+        return ((root, query, criteriaBuilder) ->
+                sellerId == null ? null : criteriaBuilder.equal(root.get("product").get("seller").get("id"), sellerId)
+        );
+    }
 
     public static Specification<Auction> hasTitle(String title) {
         return (root, query, criteriaBuilder) ->
