@@ -60,7 +60,7 @@ public class UserController {
 
         if (!user.isVerified()){
             logger.warn("Email " + loginRequest.getEmail() + " is not verified");
-            throw new AppException(ErrorCode.USED_IS_NOT_VERIFIED);
+            throw new AppException(ErrorCode.USER_IS_NOT_VERIFIED);
         }
         try {
             JwtAuthenticationResponse response = userService.authenticateUser(loginRequest);
@@ -158,6 +158,12 @@ public class UserController {
             ) {
         userService.changePassword(email, currentPassword, newPassword);
         return ResponseEntity.ok("Change Password successfully");
+    }
+
+    @PostMapping("/forgotPassword/{email}")
+    public ResponseEntity<String> forgotPasswordHandler(@PathVariable String email) {
+        verifyEmailService.sendOtp(email);
+        return ResponseEntity.ok("Email sent successfully");
     }
 
 }

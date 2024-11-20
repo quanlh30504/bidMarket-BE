@@ -6,12 +6,14 @@ import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.VerifyEmailRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.EmailService;
+import com.example.bidMarket.service.UserService;
 import com.example.bidMarket.service.VerifyEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.time.Instant;
 import java.util.Date;
@@ -20,6 +22,8 @@ import java.util.Random;
 
 @Service
 public class VerifyEmailServiceImpl implements VerifyEmailService {
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UserRepository userRepository;
@@ -85,8 +89,23 @@ public class VerifyEmailServiceImpl implements VerifyEmailService {
             return new ResponseEntity<>("OTP expired. Please try again", HttpStatus.EXPECTATION_FAILED);
         }
 
+        String newPassword = generateRandomPassword();
+        userService.changePasswordForgot(newPassword, email);  // change password
+
+        MailBody mailBody = MailBody.builder()
+                .to(email)
+                .subject("New Password for Your Account")
+                .text("Your new password is: " + newPassword)
+                .build();
+        emailService.sendSimpleMessage(mailBody);
+
         verifyEmailRepository.deleteById(fp.getId());
-        return ResponseEntity.ok("OTP verified successfully");
+
+        return ResponseEntity.ok("OTP verified and new password sent to your email successfully");
+    }
+
+    private String generateRandomPassword() {
+        return RandomStringUtils.randomAlphanumeric(10);
     }
 
     private Integer otpGenerator() {

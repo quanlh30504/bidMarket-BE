@@ -45,7 +45,8 @@ public class SecurityConfig {
             "/api/bids/**",
             "/api/products/**",
             "/api/messages/**",
-            "/api/**"
+            "/api/**",
+            "/emails/**",
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
