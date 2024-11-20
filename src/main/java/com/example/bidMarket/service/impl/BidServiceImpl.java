@@ -1,5 +1,6 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
@@ -63,6 +64,7 @@ public class BidServiceImpl implements BidService {
     @Override
     @Transactional
     public void processBid(BidCreateRequest bidRequest) {
+        log.info("Start process bid");
         Optional<Auction> auctionOpt = auctionRepository.findById(bidRequest.getAuctionId());
         if (auctionOpt.isEmpty()) {
             throw new IllegalArgumentException("Auction not found");
@@ -130,8 +132,8 @@ public class BidServiceImpl implements BidService {
         return bids.map(bidMapper::bidToBidDto);
     }
 
-
-
-
-
+    @Override
+    public long getBidCountOfAuction(UUID auctionId) {
+        return bidRepository.countByAuctionIdAndStatus(auctionId, BidStatus.VALID);
+    }
 }

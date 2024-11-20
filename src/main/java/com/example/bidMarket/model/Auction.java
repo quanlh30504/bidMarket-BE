@@ -23,7 +23,7 @@ public class Auction {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
@@ -52,8 +52,8 @@ public class Auction {
     @Column(name = "extension_count", nullable = false)
     private int extensionCount  = 0;
 
-    @Version
-    private int version;
+    @Column(name = "bid_count", nullable = false)
+    private long bidCount = 0;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)

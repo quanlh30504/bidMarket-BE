@@ -28,6 +28,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -37,8 +42,6 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URL = {
             "/api/users/signup",
             "/api/users/signin",
-            "/api/users/refresh-token",
-            "/api/users/logout",
             "/api/auctions/**",
             "/submitOrder",
             "/vnpay-payment-return",
@@ -46,7 +49,9 @@ public class SecurityConfig {
             "/api/products/**",
             "/api/messages/**",
             "/api/**",
-            "/emails/**",
+            "/emails/**",,
+            "/api/users/refresh-token",
+            "/api/users/logout"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -98,5 +103,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 }

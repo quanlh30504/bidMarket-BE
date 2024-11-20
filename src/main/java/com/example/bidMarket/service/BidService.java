@@ -18,4 +18,6 @@ public interface BidService {
     Page<BidDto> getAllBidsOfAuction(UUID auctionId, int page, int size, String sortField, Sort.Direction direction);
 
     Page<BidDto> getBidsOfAuction(UUID auctionId, int page, int size, BidStatus status, String sortField, Sort.Direction direction);
+
+    public long getBidCountOfAuction(UUID auctionId);
 }

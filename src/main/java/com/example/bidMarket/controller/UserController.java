@@ -85,6 +85,7 @@ public class UserController {
 
     @PostMapping("/refresh-token")
     public ResponseEntity<JwtAuthenticationResponse> refreshToken(@CookieValue("refreshToken") String refreshToken) {
+        logger.info("Refresh token");
         JwtAuthenticationResponse response = userService.refreshToken(new RefreshTokenRequest(refreshToken));
         return ResponseEntity.ok(response);
     }
@@ -151,7 +152,7 @@ public class UserController {
     }
 
     @PostMapping("/changePassword/{email}")
-    public ResponseEntity<String> changePasswordHandler(
+    public ResponseEntity<String> changePassword(
             @PathVariable String email,
             @RequestParam String currentPassword,
             @RequestParam String newPassword

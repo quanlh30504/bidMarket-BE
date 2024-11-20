@@ -19,5 +19,4 @@ public class PaginatedResponse<T> {
     private boolean last;
     private boolean first;
     private List<T> content;
-
 }

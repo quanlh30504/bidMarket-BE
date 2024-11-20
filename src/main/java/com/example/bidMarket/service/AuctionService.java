@@ -29,11 +29,16 @@ public interface AuctionService {
     public AuctionDto getAuctionById(UUID id);
 
     public Page<Auction> searchAuctions(String title,
-                                       CategoryType categoryType,
+                                        List<CategoryType> categoryType,
                                        AuctionStatus status,
                                        BigDecimal minPrice,
                                        BigDecimal maxPrice,
                                        LocalDateTime startTime,
                                        LocalDateTime endTime,
                                        int page, int size, String sortField, Sort.Direction sortDirection);
+
+    // Synchronize bid count of auction
+    public void syncBidCountOfAuction();
+
+    public void updateAuctionStatusOpenToClose();
 }

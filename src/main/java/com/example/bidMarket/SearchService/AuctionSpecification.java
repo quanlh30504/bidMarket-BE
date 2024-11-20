@@ -6,11 +6,14 @@ import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Category;
 import com.example.bidMarket.model.Product;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class AuctionSpecification {
 
@@ -19,15 +22,24 @@ public class AuctionSpecification {
                 title == null ? null : criteriaBuilder.like(root.get("title"), "%" + title.trim() + "%");
     }
 
-    public static Specification<Auction> hasCategoryType(CategoryType categoryType) {
+    public static Specification<Auction> hasCategoryTypes(List<CategoryType> categoryTypes) {
         return (root, query, criteriaBuilder) -> {
-            if (categoryType == null) {
+            if (categoryTypes == null || categoryTypes.isEmpty()) {
                 return null;
             }
+
             // Join với bảng product và category
             Join<Auction, Product> productJoin = root.join("product");
             Join<Product, Category> categoryJoin = productJoin.join("categories");
-            return criteriaBuilder.equal(categoryJoin.get("categoryType"), categoryType);
+
+            // Duyệt qua từng categoryType trong danh sách
+            Predicate[] predicates = new Predicate[categoryTypes.size()];
+            for (int i = 0; i < categoryTypes.size(); i++) {
+                predicates[i] = criteriaBuilder.equal(categoryJoin.get("categoryType"), categoryTypes.get(i));
+            }
+
+            // Sử dụng `criteriaBuilder.and` để yêu cầu tất cả danh mục đều phải khớp
+            return criteriaBuilder.and(predicates);
         };
     }
 

@@ -1,7 +1,8 @@
 package com.example.bidMarket.controller;
 
 import com.example.bidMarket.Enum.BidStatus;
-import com.example.bidMarket.KafkaService.BidProducer;
+//import com.example.bidMarket.KafkaService.BidProducer;
+import com.example.bidMarket.MQTemplate.BidProviderMQ;
 import com.example.bidMarket.SearchService.PaginatedResponse;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
@@ -22,11 +23,13 @@ import java.util.UUID;
 @Slf4j
 public class BidController {
     private final BidService bidService;
-    private final BidProducer bidProducer;
+//    private final BidProducer bidProducer;
+    private final BidProviderMQ bidProviderMQ;
 
     @PostMapping
     public ResponseEntity<?> placeBid(@RequestBody BidCreateRequest bidCreateRequest) {
-        bidProducer.sendBidRequest(bidCreateRequest);
+//        bidProducer.sendBidRequest(bidCreateRequest);
+        bidProviderMQ.sendBidRequest(bidCreateRequest);
         return ResponseEntity.ok("Send bid to kafka sucessfully");
     }
 

@@ -74,6 +74,7 @@ public class AuctionMapper {
                 .startingPrice(auction.getStartingPrice())
                 .minimumBidIncrement(auction.getMinimumBidIncrement())
                 .extensionCount(auction.getExtensionCount())
+                .bidCount(auction.getBidCount())
                 .build();
         return response;
     }
