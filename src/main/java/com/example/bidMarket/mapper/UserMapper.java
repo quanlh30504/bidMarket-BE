@@ -4,6 +4,8 @@ import com.example.bidMarket.dto.UserUpdateDto;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.dto.UserDto;
 import com.example.bidMarket.dto.ProfileDto;
+import com.example.bidMarket.repository.ProfileRepository;
+import com.example.bidMarket.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,10 @@ import com.example.bidMarket.model.Profile;
 public class UserMapper {
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ProfileRepository profileRepository;
 
     // Convert User to UserDto
     public UserDto userToUserDto(User user) {
@@ -74,6 +80,18 @@ public class UserMapper {
         user.setRole(userUpdateDto.getRole());
         user.setPasswordHash(passwordEncoder.encode(userUpdateDto.getPassword()));
         user.setBanned(userUpdateDto.isBanned());
+        userRepository.save(user);
     }
 
+    // Update Profile entity from ProfileDto
+    public void updateProfileFromDto(ProfileDto profileDto, Profile profile) {
+        if (profileDto == null || profile == null) {
+            return;
+        }
+
+        profile.setFullName(profileDto.getFullName());
+        profile.setPhoneNumber(profileDto.getPhoneNumber());
+        profile.setProfileImageUrl(profileDto.getProfileImageUrl());
+        profileRepository.save(profile);
+    }
 }
