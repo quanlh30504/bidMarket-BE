@@ -30,7 +30,7 @@ public abstract class ChatMapper {
     protected UserDto getOtherUser(ChatRoom room, UUID currentUserId) {
         User otherUser = room.getUser1().getId().equals(currentUserId)
                 ? room.getUser2() : room.getUser1();
-        return userMapper.toDto(otherUser);
+        return userMapper.userToUserDto(otherUser);
     }
 
     protected ChatMessageDto getLastMessage(ChatRoom room) {

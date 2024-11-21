@@ -87,7 +87,6 @@ public class AuctionServiceImpl implements AuctionService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
         Page<Auction>auctions = auctionRepository.findAll(spec, pageable);
         return auctions;
-
     }
 
 

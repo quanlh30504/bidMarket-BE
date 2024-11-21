@@ -73,6 +73,7 @@ public class AuctionMapper {
                 .endTime(auction.getEndTime())
                 .currentPrice(auction.getCurrentPrice())
                 .startingPrice(auction.getStartingPrice())
+                .status(auction.getStatus())
                 .minimumBidIncrement(auction.getMinimumBidIncrement())
                 .extensionCount(auction.getExtensionCount())
                 .bidCount(auction.getBidCount())

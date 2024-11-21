@@ -1,6 +1,8 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.Enum.Role;
 import com.example.bidMarket.MQTemplate.EmailProvider;
+import com.example.bidMarket.SearchService.PaginatedResponse;
 import com.example.bidMarket.dto.*;
 import com.example.bidMarket.dto.Request.EmailRequest;
 import com.example.bidMarket.dto.Request.LoginRequest;
@@ -8,9 +10,11 @@ import com.example.bidMarket.dto.Request.RefreshTokenRequest;
 import com.example.bidMarket.dto.Request.RegisterRequest;
 import com.example.bidMarket.dto.Response.AccountInfo;
 import com.example.bidMarket.dto.Response.JwtAuthenticationResponse;
+import com.example.bidMarket.dto.Response.OrderResponse;
 import com.example.bidMarket.dto.Response.RegisterResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
+import com.example.bidMarket.mapper.UserMapper;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.UserService;
@@ -20,6 +24,7 @@ import com.example.bidMarket.service.VerifyEmailService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,14 +43,16 @@ public class UserController {
     private final UserRepository userRepository;
     private final VerifyEmailService verifyEmailService;
     private final EmailProvider emailProvider;
+    private final UserMapper userMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    public UserController(UserService userService, UserRepository userRepository, VerifyEmailService verifyEmailService, EmailProvider emailProvider) {
+    public UserController(UserService userService, UserRepository userRepository, VerifyEmailService verifyEmailService, EmailProvider emailProvider, UserMapper userMapper) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.verifyEmailService = verifyEmailService;
         this.emailProvider = emailProvider;
+        this.userMapper = userMapper;
     }
 
     @PostMapping(value = "/signup")
@@ -114,12 +121,33 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-    @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        List<UserDto> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+    @GetMapping("/search")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public PaginatedResponse<UserDto> searchUsers(
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Role role,
+            @RequestParam(required = false) Boolean isBanned,
+            @RequestParam(required = false) Boolean isVerified,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+
+        Page<User> userPage = userService.searchUsers(email, role, isBanned, isVerified, page, size, sortBy, sortDirection);
+        List<UserDto> content = userPage.stream()
+                .map(userMapper::userToUserDto)
+                .toList();
+        return new PaginatedResponse<UserDto>(
+                userPage.getNumber(),
+                userPage.getSize(),
+                userPage.getTotalElements(),
+                userPage.getTotalPages(),
+                userPage.isLast(),
+                userPage.isFirst(),
+                content
+        );
     }
+
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")

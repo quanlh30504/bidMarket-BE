@@ -1,5 +1,7 @@
 package com.example.bidMarket.dto.Response;
 
+import com.example.bidMarket.Enum.AuctionStatus;
+import com.example.bidMarket.SearchService.AuctionSpecification;
 import com.example.bidMarket.dto.ProductDto;
 import com.example.bidMarket.dto.Request.ProductCreateRequest;
 import lombok.Builder;
@@ -19,6 +21,7 @@ public class AuctionSearchResponse {
     private LocalDateTime endTime;
     private BigDecimal currentPrice;
     private BigDecimal startingPrice;
+    private AuctionStatus status;
     private BigDecimal minimumBidIncrement;
     private long bidCount;
     private int extensionCount;

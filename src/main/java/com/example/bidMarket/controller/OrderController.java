@@ -1,5 +1,6 @@
 package com.example.bidMarket.controller;
 
+import com.example.bidMarket.Enum.OrderStatus;
 import com.example.bidMarket.SearchService.PaginatedResponse;
 import com.example.bidMarket.dto.OrderDto;
 import com.example.bidMarket.dto.Response.OrderResponse;
@@ -38,18 +39,24 @@ public class OrderController {
         return ResponseEntity.ok(orderDto);
     }
 
-    @GetMapping("/user/{userId}")
-    public PaginatedResponse<OrderResponse> getOrdersByUserId(
-            @PathVariable UUID userId,
+    @GetMapping("/bidder")
+    public PaginatedResponse<OrderResponse> searchOrdersByBidder(
+            @RequestParam UUID bidderId,
+            @RequestParam(required = false) String auctionTitle,
+            @RequestParam(required = false) OrderStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection) {
-        Page<Order> orders = orderService.getOrdersByUserId(userId, page, size, sortBy, sortDirection);
-        List<OrderResponse> content = orders.getContent().stream()
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Page<Order> orders = orderService.searchOrderWithBidderRole(bidderId, auctionTitle, status, page, size, sortBy, sortDirection);
+
+        List<OrderResponse> content = orders.getContent()
+                .stream()
                 .map(OrderMapper::orderToOrderResponse)
                 .toList();
-        return new PaginatedResponse<>(
+
+        return new PaginatedResponse<OrderResponse>(
                 orders.getNumber(),
                 orders.getSize(),
                 orders.getTotalElements(),
@@ -59,4 +66,34 @@ public class OrderController {
                 content
         );
     }
+
+    @GetMapping("/seller")
+    public PaginatedResponse<OrderResponse> searchOrdersBySeller(
+            @RequestParam UUID sellerId,
+            @RequestParam(required = false) String bidderEmail,
+            @RequestParam(required = false) String auctionTitle,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Page<Order> orders = orderService.searchOrderWithSellerRole(sellerId, bidderEmail, auctionTitle, status, page, size, sortBy, sortDirection);
+
+        List<OrderResponse> content = orders.getContent()
+                .stream()
+                .map(OrderMapper::orderToOrderResponse)
+                .toList();
+
+        return new PaginatedResponse<OrderResponse>(
+                orders.getNumber(),
+                orders.getSize(),
+                orders.getTotalElements(),
+                orders.getTotalPages(),
+                orders.isLast(),
+                orders.isFirst(),
+                content
+        );
+    }
+
 }

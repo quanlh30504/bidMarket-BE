@@ -1,6 +1,7 @@
 package com.example.bidMarket.service.impl;
 
 import com.example.bidMarket.Enum.OrderStatus;
+import com.example.bidMarket.SearchService.OrderSpecification;
 import com.example.bidMarket.dto.OrderDto;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -80,11 +82,40 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.orderToOrderDto(order);
     }
 
+    // Has Role: ROLE_BIDDER
+    @Override
+    public Page<Order> searchOrderWithBidderRole(UUID bidderId, String auctionTitle, OrderStatus status, int page, int size, String sortBy, String sortDirection) {
+        Specification<Order> orderSpecification = Specification.where(OrderSpecification.hasBidderId(bidderId))
+                .and(OrderSpecification.hasStatus(status))
+                .and(OrderSpecification.hasAuctionTitle(auctionTitle));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
+        return orderRepository.findAll(orderSpecification,pageable);
+    }
+
+    // Has Role: ROLE_SELLER
+    @Override
+    public Page<Order> searchOrderWithSellerRole(UUID sellerId, String bidderEmail, String auctionTitle, OrderStatus status, int page, int size, String sortBy, String sortDirection) {
+        Specification<Order> orderSpecification = Specification.where(OrderSpecification.hasBidderId(sellerId))
+                .and(OrderSpecification.hasBidderEmail(bidderEmail))
+                .and(OrderSpecification.hasStatus(status))
+                .and(OrderSpecification.hasAuctionTitle(auctionTitle));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
+        return orderRepository.findAll(orderSpecification,pageable);
+    }
+
     @Override
     public Page<Order> getOrdersByUserId(UUID userId, int page, int size, String sortBy, String sortDirection) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
         return orderRepository.findByUserId(userId, pageable);
     }
+
+    @Override
+    public Page<Order> getOrdersBySellerId(UUID sellerId, int page, int size, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return orderRepository.findBySellerId(sellerId, pageable);
+    }
+
 
 }

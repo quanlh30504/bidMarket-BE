@@ -1,6 +1,7 @@
 package com.example.bidMarket.service.impl;
 
 import com.example.bidMarket.AWS.AmazonS3Service;
+import com.example.bidMarket.SearchService.UserSpecification;
 import com.example.bidMarket.dto.*;
 import com.example.bidMarket.dto.Request.LoginRequest;
 import com.example.bidMarket.dto.Request.RefreshTokenRequest;
@@ -28,6 +29,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -255,6 +261,18 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address"));
 
         userRepository.updatePassword(user, passwordEncoder.encode(newPassword));
+    }
+
+    public Page<User> searchUsers(String email, Role role, Boolean isBanned, Boolean isVerified,
+                                  int page, int size, String sortBy, String sortDirection) {
+        Specification<User> spec = Specification
+                .where(UserSpecification.hasEmail(email))
+                .and(UserSpecification.hasRole(role))
+                .and(UserSpecification.isBanned(isBanned))
+                .and(UserSpecification.isVerified(isVerified));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
+        Page<User> userPage = userRepository.findAll(spec, pageable);
+        return userPage;
     }
 
 }
