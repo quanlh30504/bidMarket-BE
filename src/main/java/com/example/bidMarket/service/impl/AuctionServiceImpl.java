@@ -6,6 +6,7 @@ import com.example.bidMarket.dto.OrderDto;
 import com.example.bidMarket.dto.Request.AuctionCreateRequest;
 import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.dto.Request.AuctionUpdateRequest;
+import com.example.bidMarket.dto.Response.AuctionSearchResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.AuctionMapper;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@EnableScheduling
 public class AuctionServiceImpl implements AuctionService {
     private final OrderRepository orderRepository;
 
@@ -62,10 +65,10 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
-    public AuctionDto getAuctionById(UUID id) {
+    public AuctionSearchResponse getAuctionById(UUID id) {
         Auction auction = auctionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
-        return auctionMapper.auctionToAuctionDto(auction);
+        return auctionMapper.auctionToAuctionSearchResponse(auction);
     }
 
     @Override

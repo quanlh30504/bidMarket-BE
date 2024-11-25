@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,6 +42,8 @@ public class BidServiceImpl implements BidService {
     private final PaymentRepository paymentRepository;
 
     private final BidMapper bidMapper;
+
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
     @Transactional
@@ -101,7 +104,10 @@ public class BidServiceImpl implements BidService {
             auction.setLastBidTime(bidRequest.getBidTime());
             auctionRepository.save(auction);
         }
-        bidRepository.save(bid);
+        Bid saveBid = bidRepository.save(bid);
+
+//        simpMessagingTemplate.convertAndSend("/topic/bids/auction/" + saveBid.getAuction().getId(), bidMapper.bidToBidDto(saveBid));
+
     }
 
     // Service này lấy tat ca cac bid cua auction (Valid và Invalid)
@@ -127,7 +133,7 @@ public class BidServiceImpl implements BidService {
 
         if (bids.isEmpty()) {
             log.warn("No valid bids found for auction ID: " + auctionId);
-            throw new AppException(ErrorCode.BID_NOT_FOUND);
+//            throw new AppException(ErrorCode.BID_NOT_FOUND);
         }
         return bids.map(bidMapper::bidToBidDto);
     }

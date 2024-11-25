@@ -35,10 +35,6 @@ public class BidProviderMQ {
 
             log.info("Message sent to MQ with auctionId as key: " + auction.getId());
         }
-        // Tạo ProducerRecord với key là auctionId
-        messageQueue.sendMessage("bid_request", bidRequest);
-
-        log.info("Message sent to MQ with auctionId as key: " + auction.getId());
     }
 
 }

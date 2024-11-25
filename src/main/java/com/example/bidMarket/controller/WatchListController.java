@@ -2,6 +2,7 @@ package com.example.bidMarket.controller;
 
 import com.example.bidMarket.SearchService.PaginatedResponse;
 import com.example.bidMarket.dto.Response.WatchListResponse;
+import com.example.bidMarket.dto.WatchListDto;
 import com.example.bidMarket.mapper.WatchListMapper;
 import com.example.bidMarket.model.WatchList;
 import com.example.bidMarket.service.impl.WatchListServiceImpl;
@@ -46,14 +47,29 @@ public class WatchListController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<WatchList> addToWatchlist(@RequestParam UUID userId, @RequestParam UUID auctionId) throws Exception {
-        WatchList watchlist = watchlistService.addToWatchlist(userId, auctionId);
-        return ResponseEntity.ok(watchlist);
+    public ResponseEntity<?> addToWatchlist(@RequestParam String userId, @RequestParam String auctionId) throws Exception {
+        WatchList watchlist = watchlistService.addToWatchlist(UUID.fromString(userId), UUID.fromString(auctionId));
+        return ResponseEntity.ok(WatchListDto.builder()
+                        .id(watchlist.getId())
+                        .userId(watchlist.getUser().getId())
+                        .auctionId(watchlist.getAuction().getId())
+                        .build());
     }
 
     @DeleteMapping("/remove/{id}")
-    public ResponseEntity<String> removeFromWatchlist(@PathVariable UUID id) {
-        watchlistService.removeFromWatchlist(id);
+    public ResponseEntity<String> removeFromWatchlist(@PathVariable String id) {
+        watchlistService.removeFromWatchlist(UUID.fromString(id));
         return ResponseEntity.ok("Watchlist item removed");
     }
+
+    @GetMapping("/getWatchlist")
+    public ResponseEntity<UUID> getWatchlistByUserAndAuction(@RequestParam String userId, @RequestParam String auctionId){
+        WatchList watchList = watchlistService.getWatchlistByUserIdAndAuctionId(UUID.fromString(userId), UUID.fromString(auctionId));
+        if (watchList == null){
+            return ResponseEntity.ok(null);
+        }else{
+            return ResponseEntity.ok(watchList.getId());
+        }
+    }
+
 }

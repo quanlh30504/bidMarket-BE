@@ -7,11 +7,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MQconfig {
     @Autowired
-    private ConsumerMQ consumerMQ;
+    private BidConsumerMQ bidConsumerMQ;
 
+    @Autowired
+    private EmailConsumerMQ emailConsumerMQ;
     @PostConstruct
     private void startMessageQueueTemplate(){
-        new Thread(consumerMQ).start();
+        new Thread(bidConsumerMQ).start();
+        new Thread(emailConsumerMQ).start();
     }
 
 }

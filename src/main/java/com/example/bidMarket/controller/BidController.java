@@ -30,10 +30,10 @@ public class BidController {
     public ResponseEntity<?> placeBid(@RequestBody BidCreateRequest bidCreateRequest) {
 //        bidProducer.sendBidRequest(bidCreateRequest);
         bidProviderMQ.sendBidRequest(bidCreateRequest);
-        return ResponseEntity.ok("Send bid to kafka sucessfully");
+        return ResponseEntity.ok("Send bid to message queue sucessfully");
     }
 
-    @GetMapping("/{auctionId}/bids")
+    @GetMapping("/auction/{auctionId}")
     public PaginatedResponse<BidDto> getBidsHistoryOfAuction(
             @PathVariable UUID auctionId,
             @RequestParam(defaultValue = "0") int page,
