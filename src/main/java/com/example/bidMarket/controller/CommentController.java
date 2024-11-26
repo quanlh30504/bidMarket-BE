@@ -26,8 +26,8 @@ public class CommentController {
     private final CommentService commentService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/comment")
-    public ResponseEntity<?> addNewComment(CommentCreateRequest comment) throws Exception {
+    @PostMapping("")
+    public ResponseEntity<?> addNewComment(@RequestBody CommentCreateRequest comment) throws Exception {
         try {
             Comment savedComment = commentService.addComment(comment);
             CommentResponse commentResponse = CommentMapper.commentToCommentResponse(savedComment);

@@ -27,6 +27,7 @@ public class CommentMapper {
                 .userId(comment.getUser().getId())
                 .userEmail(comment.getUser().getEmail())
                 .userAvatarUrl(comment.getUser().getProfile().getProfileImageUrl())
+                .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .build();
