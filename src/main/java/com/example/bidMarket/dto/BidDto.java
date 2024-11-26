@@ -12,6 +12,7 @@ public class BidDto {
     private UUID userId;
     private UUID auctionId;
     private BigDecimal bidAmount;
+    private BigDecimal maxBid;
     private BidStatus status;
     private LocalDateTime bidTime;
 }
