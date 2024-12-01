@@ -1,6 +1,7 @@
 package com.example.bidMarket.model;
 
 import com.example.bidMarket.Enum.MessageStatus;
+import com.example.bidMarket.Enum.MessageType;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -21,23 +22,28 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatMessage chatRoom;
+    private ChatRoom chatRoom;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column
+    private String fileUrl;
+
+    @Column
     @Enumerated(EnumType.STRING)
-    private MessageStatus status;
+    private MessageStatus status = MessageStatus.SENT;
+
+    @Enumerated(EnumType.STRING)
+    private MessageType type;
 
     @CreatedDate
-    @Column(name = "sent_at")
-    private LocalDateTime sentAt;
+    private LocalDateTime timestamp;
 
-    @LastModifiedDate
-    @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    @Version
+    private Long version;
 }

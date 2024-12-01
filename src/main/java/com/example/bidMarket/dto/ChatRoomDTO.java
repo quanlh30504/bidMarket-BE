@@ -3,13 +3,13 @@ package com.example.bidMarket.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Builder
-public class ChatRoomDto {
+public class ChatRoomDTO {
     private UUID id;
-    private UserDto otherUser;
-    private ChatMessageDto lastMessage;
+    private UserDto user1;
+    private UserDto user2;
+    private MessageDTO lastMessage;
 }

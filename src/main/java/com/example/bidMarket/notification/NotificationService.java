@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -94,17 +92,18 @@ public class NotificationService {
     }
 
     private void sendNotificationToUser(UUID userId, NotificationDto notification) {
-        String destination = "/user/" + userId + "/queue/notifications";
         try {
-//            System.out.println("Sending WebSocket notification to destination: " + destination);
-            System.out.println("Notification content: " + notification);
+            log.info("Sending notification to user: {}", userId);
 
-//            messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/queue/notifications", notification);
-            messagingTemplate.convertAndSend("/topic/notifications", notification);
+            messagingTemplate.convertAndSendToUser(
+                    userId.toString(),
+                    "queue/notifications",
+                    notification
+            );
 
-            System.out.println("Notification successfully sent to destination: " + destination);
+            log.info("Notification sent successfully to user: {}", userId);
         } catch (Exception e) {
-            System.err.println("Failed to send notification: " + e.getMessage());
+            log.error("Failed to send notification: {}", e.getMessage(), e);
         }
     }
 
