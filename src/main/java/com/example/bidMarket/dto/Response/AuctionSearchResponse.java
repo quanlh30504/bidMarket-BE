@@ -21,6 +21,7 @@ public class AuctionSearchResponse {
     private LocalDateTime endTime;
     private BigDecimal currentPrice;
     private BigDecimal startingPrice;
+    private String winner;
     private AuctionStatus status;
     private BigDecimal minimumBidIncrement;
     private long bidCount;

@@ -270,9 +270,11 @@ public class AuctionServiceImpl implements AuctionService {
                 return;
             }
 
+
             Bid bid = winBid.get();
+            auction.setWinner(bid.getUser().getEmail());
             OrderDto orderDto = OrderDto.builder()
-                    .userId(bid.getUserId())
+                    .userId(bid.getUser().getId())
                     .auctionId(auction.getId())
                     .totalAmount(bid.getBidAmount())
                     .paymentDueDate(LocalDateTime.now().plusDays(5)) // Hard code: payment due date is 5 days from created order date.

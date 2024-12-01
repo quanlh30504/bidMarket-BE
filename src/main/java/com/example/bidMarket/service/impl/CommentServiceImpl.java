@@ -30,6 +30,12 @@ public class CommentServiceImpl implements CommentService {
     private AuctionRepository auctionRepository;
 
     @Override
+    public Comment getCommentById(UUID id) {
+        Comment comment = commentRepository.findById(id).orElseThrow(() -> new RuntimeException("Comment don't existed"));
+        return comment;
+    }
+
+    @Override
     public Comment addComment(CommentCreateRequest request) throws Exception {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -64,7 +70,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
 
-        comment.setContent(request.getNewContent());
+        comment.setContent(request.getContent());
         return commentRepository.save(comment);
     }
 
