@@ -1,25 +1,25 @@
 spring:
   application:
     name: bidMarket
-  kafka:
-    bootstrap-servers: localhost:9092  # Địa chỉ của Kafka server
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      group-id: kafka_group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-#        spring.json.trusted.packages: com.example.kafkaSpring.model # Thêm package model chứa User để kafka tin tưởng
-        spring.json.trusted.packages: "*"  # Tin tưởng tất cả các packag
-    listener:
-      concurrency: 1 # Đảm bảo chỉ có 1 consumer xử lý 1 partition tại 1 thời điểm
-    topic:
-      bid_request: bid_request
-    partitions:
-      bid: 10
+#  kafka:
+#    bootstrap-servers: localhost:9092  # Địa chỉ của Kafka server
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#    consumer:
+#      group-id: kafka_group
+#      auto-offset-reset: earliest
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      properties:
+##        spring.json.trusted.packages: com.example.kafkaSpring.model # Thêm package model chứa User để kafka tin tưởng
+#        spring.json.trusted.packages: "*"  # Tin tưởng tất cả các packag
+#    listener:
+#      concurrency: 1 # Đảm bảo chỉ có 1 consumer xử lý 1 partition tại 1 thời điểm
+#    topic:
+#      bid_request: bid_request
+#    partitions:
+#      bid: 10
 
   mail:
     host: ${mailServer.host}
@@ -49,7 +49,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-
+  task:
+    scheduling:
+      pool:
+        size: 10 # Cấu hình số lượng luồng tối đa cho các task scheduled
+    threadpool:
+      size: 20 # Tùy chỉnh cho số lượng luồng tối đa cho các tác vụ bất đồng bộ
 server:
   port: 8080
 

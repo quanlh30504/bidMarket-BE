@@ -31,7 +31,7 @@ public class AuctionMapper {
         auction.setLastBidTime(auctionCreateRequest.getStartTime());
         auction.setCurrentPrice(auctionCreateRequest.getStartingPrice());
         auction.setStartingPrice(auctionCreateRequest.getStartingPrice());
-        auction.setStatus(AuctionStatus.PENDING);
+        auction.setStatus(AuctionStatus.CANCELED);
         auction.setMinimumBidIncrement(auctionCreateRequest.getMinimumBidIncrement());
         auction.setExtensionCount(0);
         auction.setProduct(product);
@@ -66,12 +66,15 @@ public class AuctionMapper {
     }
     public AuctionSearchResponse auctionToAuctionSearchResponse(Auction auction) {
         AuctionSearchResponse response = AuctionSearchResponse.builder()
+                .id(auction.getId())
                 .title(auction.getTitle())
                 .productDto(productMapper.productToProductDto(auction.getProduct()))
                 .startTime(auction.getStartTime())
                 .endTime(auction.getEndTime())
                 .currentPrice(auction.getCurrentPrice())
                 .startingPrice(auction.getStartingPrice())
+                .status(auction.getStatus())
+                .winner(auction.getWinner())
                 .minimumBidIncrement(auction.getMinimumBidIncrement())
                 .extensionCount(auction.getExtensionCount())
                 .bidCount(auction.getBidCount())

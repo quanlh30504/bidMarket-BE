@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CommentService {
+    Comment getCommentById(UUID id);
     Comment addComment(CommentCreateRequest request) throws Exception;
     public Page<Comment> getCommentsByAuctionId(UUID auctionId, int size, int page, String sortBy, String sortDirection);
     List<Comment> getCommentsByUser(UUID userId) throws Exception;

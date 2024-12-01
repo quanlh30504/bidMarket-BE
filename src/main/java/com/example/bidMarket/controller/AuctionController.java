@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,15 +60,17 @@ public class AuctionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AuctionDto> getAuctionById(@PathVariable UUID id){
-        return ResponseEntity.ok(auctionService.getAuctionById(id));
+    public ResponseEntity<AuctionSearchResponse> getAuctionById(@PathVariable String id){
+        log.info("Get info of auction: " + id);
+        return ResponseEntity.ok(auctionService.getAuctionById(UUID.fromString(id)));
     }
 
     @GetMapping("/search")
     public PaginatedResponse<AuctionSearchResponse> searchAuctions(
+            @RequestParam(required = false) UUID sellerId,
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) CategoryType categoryType,
-            @RequestParam(required = false) AuctionStatus status,
+            @RequestParam(required = false) List<String> categoryType,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) LocalDateTime startTime,
@@ -77,8 +80,16 @@ public class AuctionController {
             @RequestParam(defaultValue = "currentPrice") String sortField,
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDirection) {
 
+        List<CategoryType> categoryTypeList = new ArrayList<>();
+        if (categoryType != null) {
+            categoryTypeList = categoryType.stream()
+//                    .filter(category -> !"ALL".equals(category))
+                    .map(CategoryType::valueOf).toList();
+        }
+        AuctionStatus auctionStatus = status != null ? AuctionStatus.valueOf(status) : null;
+
         log.info("Start search auction");
-        Page<Auction> auctions = auctionService.searchAuctions(title, categoryType, status, minPrice, maxPrice, startTime, endTime, page, size, sortField, sortDirection);
+        Page<Auction> auctions = auctionService.searchAuctions(sellerId, title, categoryTypeList, auctionStatus, minPrice, maxPrice, startTime, endTime, page, size, sortField, sortDirection);
         List<AuctionSearchResponse> content = auctions.getContent().stream().map(auctionMapper::auctionToAuctionSearchResponse).toList();
 
         return new PaginatedResponse<>(
@@ -91,6 +102,10 @@ public class AuctionController {
                 content
         );
     }
+
+    @GetMapping("/{sellerId}/search")
+
+
 
     @PutMapping("/close/{auctionId}")
     public ResponseEntity<String> closeAuction(@PathVariable UUID auctionId) {

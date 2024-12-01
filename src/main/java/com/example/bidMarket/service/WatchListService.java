@@ -10,4 +10,7 @@ public interface WatchListService {
     public Page<WatchList> getWatchlistByUserId(UUID userId, int page, int size, String sortBy, String sortDirection);
     WatchList addToWatchlist(UUID userId, UUID auctionId) throws Exception;
     void removeFromWatchlist(UUID id) throws Exception;
+
+
+    WatchList getWatchlistByUserIdAndAuctionId(UUID userId, UUID auctionId);
 }

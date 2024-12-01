@@ -5,10 +5,7 @@ import com.example.bidMarket.dto.OrderDto;
 import com.example.bidMarket.dto.Response.OrderResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
-import com.example.bidMarket.model.Auction;
-import com.example.bidMarket.model.Order;
-import com.example.bidMarket.model.ProductImage;
-import com.example.bidMarket.model.User;
+import com.example.bidMarket.model.*;
 import com.example.bidMarket.repository.AuctionRepository;
 import com.example.bidMarket.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -58,7 +55,14 @@ public class OrderMapper {
                 .userId(order.getUser().getId())
                 .userEmail(order.getUser().getEmail())
                 .auctionTitle(order.getAuction().getTitle())
-                .productImageUrl(!productImageList.isEmpty() ? productImageList.get(0).getImageUrl() : null)
+                .productImageUrl(!productImageList.isEmpty()
+                        ? productImageList
+                            .stream()
+                            .filter(ProductImage::isPrimary)
+                            .findFirst()
+                            .map(ProductImage::getImageUrl)
+                            .orElse(productImageList.get(0).getImageUrl())
+                        : null)
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .paymentDueDate(order.getPaymentDueDate())

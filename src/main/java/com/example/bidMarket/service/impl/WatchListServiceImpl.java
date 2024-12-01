@@ -1,5 +1,6 @@
 package com.example.bidMarket.service.impl;
 
+import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.User;
 import com.example.bidMarket.model.WatchList;
@@ -22,7 +23,9 @@ public class WatchListServiceImpl implements WatchListService {
 
     @Autowired
     private WatchListRepository watchlistRepository;
+    @Autowired
     private UserRepository userRepository;
+    @Autowired
     private AuctionRepository auctionRepository;
 
     @Override
@@ -41,18 +44,31 @@ public class WatchListServiceImpl implements WatchListService {
         Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
 
-        // Tạo một đối tượng Watchlist mới
-        WatchList watchlist = new WatchList();
-        watchlist.setUser(user);
-        watchlist.setAuction(auction);
+        WatchList watchList = watchlistRepository.findByUserIdAndAuctionId(userId, auctionId).orElse(null);
+        if (watchList != null) {
+            throw new RuntimeException(
+                    String.format("Watchlist for auction %s already exists for user %s", auctionId, userId)
+            );
+        }
 
-        return watchlistRepository.save(watchlist);
+        // Tạo một đối tượng Watchlist mới
+        watchList = new WatchList();
+        watchList.setUser(user);
+        watchList.setAuction(auction);
+
+        return watchlistRepository.save(watchList);
     }
 
     @Override
     public void removeFromWatchlist(UUID id) {
         // Logic to remove a watchlist item by id
         watchlistRepository.deleteById(id);
+    }
+
+    @Override
+    public WatchList getWatchlistByUserIdAndAuctionId(UUID userId, UUID auctionId) {
+        WatchList watchList = watchlistRepository.findByUserIdAndAuctionId(userId,auctionId).orElse(null);
+        return watchList;
     }
 
 

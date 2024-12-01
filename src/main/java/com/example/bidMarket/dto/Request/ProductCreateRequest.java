@@ -19,5 +19,5 @@ public class ProductCreateRequest {
     private UUID sellerId;
     private Integer stockQuantity;
     private Set<CategoryType> categories;
-    private List<String> imageUrls;
+    private List<ProductImageDto> productImages;
 }

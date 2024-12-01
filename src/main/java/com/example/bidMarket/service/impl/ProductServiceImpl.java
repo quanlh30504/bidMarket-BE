@@ -74,12 +74,12 @@ public class ProductServiceImpl implements ProductService {
         // Save product to get its id
         product = productRepository.save(product);
 
-        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+        if (request.getProductImages() != null && !request.getProductImages().isEmpty()) {
             List<ProductImage> productImages = new ArrayList<>();
-            for (int i = 0; i < request.getImageUrls().size(); i++) {
+            for (int i = 0; i < request.getProductImages().size(); i++) {
                 ProductImage productImage = new ProductImage();
-                productImage.setImageUrl(request.getImageUrls().get(i));
-                productImage.setPrimary(i == 0);
+                productImage.setImageUrl(request.getProductImages().get(i).getImageUrl());
+                productImage.setPrimary(request.getProductImages().get(i).getIsPrimary());
                 productImage.setProduct(product);
                 productImages.add(productImage);
             }
@@ -208,11 +208,15 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.productToProductDto(product);
     }
 
-    public Page<Product> searchProducts(String name, CategoryType categoryType, ProductStatus status,
+    public Page<Product> searchProducts(UUID sellerId,
+                                        String name,
+                                        CategoryType categoryType,
+                                        ProductStatus status,
                                         int page, int size, String sortField, Sort.Direction sortDirection) {
 
         Specification<Product> spec = Specification
-                .where(ProductSpecification.hasName(name))
+                .where(ProductSpecification.hasSellerId(sellerId))
+                .and(ProductSpecification.hasName(name))
                 .and(ProductSpecification.hasCategoryType(categoryType))
                 .and(ProductSpecification.hasStatus(status));
 

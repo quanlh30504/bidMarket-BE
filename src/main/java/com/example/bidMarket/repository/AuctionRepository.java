@@ -15,10 +15,8 @@ import java.util.UUID;
 
 @Repository
 public interface AuctionRepository extends JpaRepository<Auction, UUID>, JpaSpecificationExecutor<Auction> {
-
-    // Optimistic Locking
-    @Lock(LockModeType.OPTIMISTIC)
     Optional<Auction> findById(UUID id);
 
+    List<Auction> findByStatus(AuctionStatus status);
     List<Auction> findByEndTimeBeforeAndStatus(LocalDateTime now, AuctionStatus status);
 }

@@ -12,7 +12,7 @@ public enum ErrorCode {
     USER_ROLE_INVALID(1008, "Invalid user role"),
     EMAIL_ALREADY_EXIST(1009, "Email already exists"),
     USER_WAS_VERIFIED(1010, "Email already verified"),
-    USED_IS_NOT_VERIFIED(1011, "Email is not verified"),
+    USER_IS_NOT_VERIFIED(1011, "Email is not verified"),
 
     // Validation errors (2xxx)
     INVALID_REQUEST(2001, "Invalid request format"),
@@ -57,6 +57,7 @@ public enum ErrorCode {
     BID_CREATION_FAILED(6004, "Failed to place bid"),
     BID_UPDATE_FAILED(6005, "Failed to update bid"),
     BID_IS_REJECTED(6006, "Bid is rejected because the auction is not open"),
+    MAX_BID_TOO_LOW(6007, "Max bid is lower than the current highest bid"),
 
     // Profile-related errors (7xxx)
     PROFILE_NOT_FOUND(7001, "Profile not found"),

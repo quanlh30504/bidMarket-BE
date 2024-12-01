@@ -6,6 +6,7 @@ import com.example.bidMarket.dto.OrderDto;
 import com.example.bidMarket.dto.Request.AuctionCreateRequest;
 import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.dto.Request.AuctionUpdateRequest;
+import com.example.bidMarket.dto.Response.AuctionSearchResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.AuctionMapper;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@EnableScheduling
 public class AuctionServiceImpl implements AuctionService {
     private final OrderRepository orderRepository;
 
@@ -62,22 +65,24 @@ public class AuctionServiceImpl implements AuctionService {
     }
 
     @Override
-    public AuctionDto getAuctionById(UUID id) {
+    public AuctionSearchResponse getAuctionById(UUID id) {
         Auction auction = auctionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
-        return auctionMapper.auctionToAuctionDto(auction);
+        return auctionMapper.auctionToAuctionSearchResponse(auction);
     }
 
     @Override
-    public Page<Auction> searchAuctions(String title,
-                                        CategoryType categoryType,
+    public Page<Auction> searchAuctions(UUID sellerId,
+                                        String title,
+                                        List<CategoryType> categoryType,
                                         AuctionStatus status,
                                         BigDecimal minPrice, BigDecimal maxPrice,
                                         LocalDateTime startTime, LocalDateTime endTime,
                                         int page, int size, String sortField, Sort.Direction sortDirection) {
         Specification<Auction> spec = Specification
-                .where(AuctionSpecification.hasTitle(title))
-                .and(AuctionSpecification.hasCategoryType(categoryType))
+                .where(AuctionSpecification.hasSellerId(sellerId))
+                .and(AuctionSpecification.hasTitle(title))
+                .and(AuctionSpecification.hasCategoryTypes(categoryType))
                 .and(AuctionSpecification.hasStatus(status))
                 .and(AuctionSpecification.hasPriceBetween(minPrice, maxPrice))
                 .and(AuctionSpecification.hasStartTimeBetween(startTime, endTime));
@@ -85,8 +90,8 @@ public class AuctionServiceImpl implements AuctionService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
         Page<Auction>auctions = auctionRepository.findAll(spec, pageable);
         return auctions;
-
     }
+
 
     @Override
     @Scheduled(fixedRate = 60000) // update auction status open -> close every 1 minute
@@ -119,6 +124,20 @@ public class AuctionServiceImpl implements AuctionService {
             }
         }
     }
+
+    // Auto open auction : ready to open
+    @Scheduled(fixedRate = 60000)
+    public void autoOpenAuctions() {
+        List<Auction> readyAuctions = auctionRepository.findByStatus(AuctionStatus.READY);
+        for (Auction auction : readyAuctions) {
+            if (auction.getStartTime().isBefore(LocalDateTime.now())) {
+                auction.setStatus(AuctionStatus.OPEN);
+                auctionRepository.save(auction);
+                log.info("Auction {} is now OPEN.", auction.getId());
+            }
+        }
+    }
+
 
     @Override
     @Transactional
@@ -207,26 +226,32 @@ public class AuctionServiceImpl implements AuctionService {
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
 
         if (auction.getStatus() != AuctionStatus.PENDING) {
-            log.error("Auction status is not PENDING");
+            log.error("Auction status is not PENDING, current status: {}", auction.getStatus());
             throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
         }
 
-        if (!auction.getStartTime().isAfter(LocalDateTime.now())) {
-            log.error("Time starting auction is invalid");
-            throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
+        if (auction.getStartTime().isAfter(LocalDateTime.now())) {
+            auction.setStatus(AuctionStatus.READY);
+            log.info("Auction {} is READY and will OPEN at: {}", auction.getId(), auction.getStartTime());
+        } else {
+            auction.setStatus(AuctionStatus.OPEN);
+            log.info("Auction {} is now OPEN.", auction.getId());
         }
 
         Product product = auction.getProduct();
         if (product == null || product.getStatus() != ProductStatus.INACTIVE) {
-            log.error("Product of this auction was ACTIVE");
+            log.error("Product is in invalid state. Product status: {}",
+                    product != null ? product.getStatus() : "null");
             throw new AppException(ErrorCode.AUCTION_OPEN_FAILED);
         }
-
-        auction.setStatus(AuctionStatus.OPEN);
         product.setStatus(ProductStatus.ACTIVE);
 
-        auctionRepository.save(auction);
-        productRepository.save(product);
+        // Không cần gọi save nếu sử dụng Spring Data JPA + Hibernate với annotation @Transaction
+//        auctionRepository.save(auction);
+//        productRepository.save(product);
+
+        log.info("Auction {} is now OPEN. Product {} is ACTIVE.",
+                auction.getId(), product.getId());
     }
 
     @Override
@@ -245,9 +270,11 @@ public class AuctionServiceImpl implements AuctionService {
                 return;
             }
 
+
             Bid bid = winBid.get();
+            auction.setWinner(bid.getUser().getEmail());
             OrderDto orderDto = OrderDto.builder()
-                    .userId(bid.getUserId())
+                    .userId(bid.getUser().getId())
                     .auctionId(auction.getId())
                     .totalAmount(bid.getBidAmount())
                     .paymentDueDate(LocalDateTime.now().plusDays(5)) // Hard code: payment due date is 5 days from created order date.

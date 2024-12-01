@@ -20,6 +20,6 @@ public interface ProductService {
     public void deleteProduct(UUID productId);
     public ProductDto updateProduct(UUID id, ProductUpdateRequest request);
     public ProductDto updateStatus(UUID id, ProductStatus status) throws Exception;
-    public Page<Product> searchProducts(String name, CategoryType categoryType, ProductStatus status,
+    public Page<Product> searchProducts(UUID sellerId, String name, CategoryType categoryType, ProductStatus status,
                                         int page, int size, String sortField, Sort.Direction sortDirection);
 }

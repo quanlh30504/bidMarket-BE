@@ -5,6 +5,7 @@ import com.example.bidMarket.Enum.CategoryType;
 import com.example.bidMarket.dto.Request.AuctionCreateRequest;
 import com.example.bidMarket.dto.AuctionDto;
 import com.example.bidMarket.dto.Request.AuctionUpdateRequest;
+import com.example.bidMarket.dto.Response.AuctionSearchResponse;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.User;
 import org.springframework.data.domain.Page;
@@ -26,10 +27,11 @@ public interface AuctionService {
     public void reOpenAuction(UUID id, AuctionUpdateRequest request);
 
     public List<AuctionDto> getAllAuction();
-    public AuctionDto getAuctionById(UUID id);
+    public AuctionSearchResponse getAuctionById(UUID id);
 
-    public Page<Auction> searchAuctions(String title,
-                                       CategoryType categoryType,
+    public Page<Auction> searchAuctions(UUID sellerId,
+                                        String title,
+                                        List<CategoryType> categoryType,
                                        AuctionStatus status,
                                        BigDecimal minPrice,
                                        BigDecimal maxPrice,

@@ -11,6 +11,7 @@ import java.util.UUID;
 public class BidDto {
     private UUID userId;
     private UUID auctionId;
+    private String userEmail;
     private BigDecimal bidAmount;
     private BidStatus status;
     private LocalDateTime bidTime;
