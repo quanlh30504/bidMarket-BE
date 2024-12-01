@@ -39,6 +39,9 @@ public class Auction {
     @Column(name = "starting_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal startingPrice;
 
+    @Column(name = "winner")
+    private String winner;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuctionStatus status = AuctionStatus.PENDING;

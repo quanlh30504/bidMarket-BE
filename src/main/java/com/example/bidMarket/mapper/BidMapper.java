@@ -9,5 +9,7 @@ import org.mapstruct.Mapping;
 public interface BidMapper {
 
     @Mapping(target = "auctionId", source = "auction.id")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "userEmail", source = "user.email")
     BidDto bidToBidDto(Bid bid);
 }

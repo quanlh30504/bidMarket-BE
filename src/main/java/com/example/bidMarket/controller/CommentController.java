@@ -27,13 +27,13 @@ public class CommentController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("")
-    public ResponseEntity<?> addNewComment(@RequestBody CommentCreateRequest comment) throws Exception {
+    public ResponseEntity<CommentResponse> addNewComment(@RequestBody CommentCreateRequest comment) throws Exception {
         try {
             Comment savedComment = commentService.addComment(comment);
             CommentResponse commentResponse = CommentMapper.commentToCommentResponse(savedComment);
             messagingTemplate.convertAndSend("/topic/auction-comments/" + comment.getAuctionId(),
                     new CommentEvent("create", commentResponse));
-            return ResponseEntity.ok("Add comment successfully");
+            return ResponseEntity.ok(commentResponse);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(null);
         }
@@ -61,12 +61,12 @@ public class CommentController {
         );
     }
 
-    @PutMapping("/{auctionId}/{commentId}")
-    public ResponseEntity<?> updateComment(@PathVariable UUID auctionId, @PathVariable UUID commentId, @RequestBody UpdateCommentRequest request) {
+    @PutMapping("/{commentId}")
+    public ResponseEntity<?> updateComment(@PathVariable UUID commentId, @RequestBody UpdateCommentRequest request) {
         try {
             Comment newComment = commentService.updateComment(commentId, request);
 
-            messagingTemplate.convertAndSend("/topic/auction-comments/" + auctionId,
+            messagingTemplate.convertAndSend("/topic/auction-comments/" + newComment.getAuction().getId(),
                     new CommentEvent("update", CommentMapper.commentToCommentResponse(newComment)));
             return ResponseEntity.ok("Update comment successfully");
         } catch (Exception e) {
@@ -74,8 +74,9 @@ public class CommentController {
         }
     }
 
-    @DeleteMapping("/{auctionId}/{commentId}")
-    public void deleteComment(@PathVariable UUID auctionId, @PathVariable UUID commentId) {
+    @DeleteMapping("/{commentId}")
+    public void deleteComment(@PathVariable UUID commentId) {
+        UUID auctionId = commentService.getCommentById(commentId).getAuction().getId();
         commentService.deleteComment(commentId);
         // Phát sự kiện "delete" qua WebSocket
         messagingTemplate.convertAndSend("/topic/auction-comments/" + auctionId,
