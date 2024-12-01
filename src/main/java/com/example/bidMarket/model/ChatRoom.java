@@ -24,7 +24,7 @@ public class ChatRoom {
     @JoinColumn(name = "user2_id")
     private User user2;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
     @OrderBy("timestamp DESC")
-    private List<ChatMessage> messages = new ArrayList<>();
+    private List<Message> messages = new ArrayList<>();
 }

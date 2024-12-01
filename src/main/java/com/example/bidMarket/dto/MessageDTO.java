@@ -10,13 +10,13 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class ChatMessageDto {
+public class MessageDTO {
     private UUID id;
-    private UUID roomId;
-    private UUID senderId;
-    private String senderName;
     private String content;
-    private String fileUrl;
     private MessageType type;
+    private String fileUrl;
+    private UserDto sender;
+    private UUID chatRoomId;
     private LocalDateTime timestamp;
+    private MessageStatus status;
 }
