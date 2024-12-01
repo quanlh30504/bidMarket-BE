@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface FollowRepository extends JpaRepository<Follow, UUID> {
     boolean existsByFollowerIdAndSellerId(UUID followerId, UUID sellerId);
     Optional<Follow> findByFollowerIdAndSellerId(UUID followerId, UUID sellerId);
+    long countBySellerId(UUID sellerId);
 }

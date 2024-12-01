@@ -114,7 +114,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
+//    @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
     public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
         logger.debug("Fetching user with id: {}", id);
         UserDto userDto = userService.getUserById(id);
@@ -157,7 +157,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}/accountInfo")
-//    @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
     public ResponseEntity<AccountInfo> getUserAccountInfo(@PathVariable UUID id) {
         logger.info("Get account info of user id " + id);
         return ResponseEntity.ok(userService.getAccountInfoByUserId(id));
