@@ -2,8 +2,7 @@ package com.example.bidMarket.model;
 
 import com.example.bidMarket.Enum.AddressType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,12 +15,15 @@ import java.util.UUID;
 @Entity
 @Table(name = "addresses")
 @EntityListeners(AuditingEntityListener.class)
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -31,7 +33,10 @@ public class Address {
     @Column(nullable = false)
     private String city;
 
+    @Column(name = "state")
     private String state;
+
+    @Column(name = "postal_code")
     private String postalCode;
 
     @Column(nullable = false)

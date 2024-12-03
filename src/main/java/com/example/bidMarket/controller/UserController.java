@@ -198,4 +198,9 @@ public class UserController {
         return ResponseEntity.ok("Email sent successfully");
     }
 
+    @PutMapping("/banUser/{userId}")
+    public void banUser(@PathVariable UUID userId) {
+        userService.banUser(userId);
+    }
+
 }

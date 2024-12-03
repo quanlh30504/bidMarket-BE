@@ -16,6 +16,11 @@ import java.util.UUID;
 
 public class AuctionSpecification {
 
+    public static Specification<Auction> hasNotId(UUID auctionId) {
+        return (root, query, criteriaBuilder) ->
+                auctionId == null ? null : criteriaBuilder.notEqual(root.get("id"), auctionId);
+    }
+
     public static Specification<Auction> hasSellerId(UUID sellerId) {
         return ((root, query, criteriaBuilder) ->
                 sellerId == null ? null : criteriaBuilder.equal(root.get("product").get("seller").get("id"), sellerId)
@@ -47,35 +52,6 @@ public class AuctionSpecification {
             return criteriaBuilder.or(predicates);
         };
     }
-//    public static Specification<Auction> hasCategoryTypes(List<CategoryType> categoryTypes) {
-//        return (root, query, criteriaBuilder) -> {
-//            if (categoryTypes == null || categoryTypes.isEmpty()) {
-//                return null;
-//            }
-//
-//            // Join với bảng product và category
-//            Join<Auction, Product> productJoin = root.join("product");
-//            Join<Product, Category> categoryJoin = productJoin.join("categories");
-//
-//            // Subquery để kiểm tra số lượng danh mục khớp
-//            Subquery<UUID> subquery = query.subquery(UUID.class);
-//            Root<Product> productRoot = subquery.from(Product.class);
-//            Join<Product, Category> subCategoryJoin = productRoot.join("categories");
-//
-//            // Tìm tất cả các product.id khớp với categoryTypes
-//            subquery.select(productRoot.get("id"))
-//                    .where(subCategoryJoin.get("categoryType").in(categoryTypes))
-//                    .groupBy(productRoot.get("id"))
-//                    .having(criteriaBuilder.equal(
-//                            criteriaBuilder.countDistinct(subCategoryJoin.get("categoryType")),
-//                            categoryTypes.size()
-//                    ));
-//
-//            // Kiểm tra sản phẩm trong subquery
-//            return criteriaBuilder.in(productJoin.get("id")).value(subquery);
-//        };
-//    }
-
 
     public static Specification<Auction> hasStatus(AuctionStatus status) {
         return (root, query, criteriaBuilder) ->

@@ -37,6 +37,7 @@ public interface AuctionService {
                                        BigDecimal maxPrice,
                                        LocalDateTime startTime,
                                        LocalDateTime endTime,
+                                       UUID hasNotId,
                                        int page, int size, String sortField, Sort.Direction sortDirection);
 
     // Synchronize bid count of auction

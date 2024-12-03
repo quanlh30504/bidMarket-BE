@@ -241,6 +241,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void banUser(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        user.setBanned(true);
+        userRepository.save(user);
+    }
+
+    @Override
     public void changePassword(String email, String currentPassword, String newPassword) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Please enter a valid email address"));
