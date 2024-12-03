@@ -78,6 +78,7 @@ public class AuctionServiceImpl implements AuctionService {
                                         AuctionStatus status,
                                         BigDecimal minPrice, BigDecimal maxPrice,
                                         LocalDateTime startTime, LocalDateTime endTime,
+                                        UUID hasNotId,
                                         int page, int size, String sortField, Sort.Direction sortDirection) {
         Specification<Auction> spec = Specification
                 .where(AuctionSpecification.hasSellerId(sellerId))
@@ -85,7 +86,8 @@ public class AuctionServiceImpl implements AuctionService {
                 .and(AuctionSpecification.hasCategoryTypes(categoryType))
                 .and(AuctionSpecification.hasStatus(status))
                 .and(AuctionSpecification.hasPriceBetween(minPrice, maxPrice))
-                .and(AuctionSpecification.hasStartTimeBetween(startTime, endTime));
+                .and(AuctionSpecification.hasStartTimeBetween(startTime, endTime)
+                .and(AuctionSpecification.hasNotId(hasNotId)));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
         Page<Auction>auctions = auctionRepository.findAll(spec, pageable);

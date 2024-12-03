@@ -75,11 +75,14 @@ public class AuctionController {
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) LocalDateTime startTime,
             @RequestParam(required = false) LocalDateTime endTime,
+            @RequestParam(required = false) UUID hasNotId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "currentPrice") String sortField,
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDirection) {
 
+        log.info("Start search auction");
+        log.info("Start search related auction id: " + hasNotId);
         List<CategoryType> categoryTypeList = new ArrayList<>();
         if (categoryType != null) {
             categoryTypeList = categoryType.stream()
@@ -88,8 +91,7 @@ public class AuctionController {
         }
         AuctionStatus auctionStatus = status != null ? AuctionStatus.valueOf(status) : null;
 
-        log.info("Start search auction");
-        Page<Auction> auctions = auctionService.searchAuctions(sellerId, title, categoryTypeList, auctionStatus, minPrice, maxPrice, startTime, endTime, page, size, sortField, sortDirection);
+        Page<Auction> auctions = auctionService.searchAuctions(sellerId, title, categoryTypeList, auctionStatus, minPrice, maxPrice, startTime, endTime, hasNotId, page, size, sortField, sortDirection);
         List<AuctionSearchResponse> content = auctions.getContent().stream().map(auctionMapper::auctionToAuctionSearchResponse).toList();
 
         return new PaginatedResponse<>(

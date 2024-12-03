@@ -1,11 +1,16 @@
 package com.example.bidMarket.dto;
 
 import com.example.bidMarket.Enum.AddressType;
-import lombok.Data;
+import lombok.*;
 
 import java.util.UUID;
 
 @Data
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AddressDto {
     private UUID id;
     private UUID userId;

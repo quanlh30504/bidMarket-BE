@@ -5,6 +5,7 @@ import com.example.bidMarket.Enum.OrderStatus;
 import com.example.bidMarket.Enum.PaymentMethod;
 import com.example.bidMarket.Enum.PaymentStatus;
 import com.example.bidMarket.dto.PaymentDto;
+import com.example.bidMarket.dto.Request.ShippingCreateRequest;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.PaymentMapper;
@@ -12,6 +13,7 @@ import com.example.bidMarket.model.Order;
 import com.example.bidMarket.repository.OrderRepository;
 import com.example.bidMarket.service.OrderService;
 import com.example.bidMarket.service.PaymentService;
+import com.example.bidMarket.service.ShippingService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +25,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
-@RequestMapping()
+@RequestMapping("/api/VNPay")
 @RequiredArgsConstructor
 @Slf4j
 public class VNPayController {
@@ -32,6 +34,7 @@ public class VNPayController {
     private final VNPayService vnPayService;
     private final PaymentService paymentService;
     private final OrderService orderService;
+    private final ShippingService shippingService;
 
     private final PaymentMapper paymentMapper;
 
@@ -62,6 +65,12 @@ public class VNPayController {
         // Cập nhật trạng thái đơn hàng nếu thanh toán thành công
         if (paymentDto.getStatus() == PaymentStatus.SUCCESS) {
             orderService.updateStatus(paymentDto.getOrderId(), OrderStatus.PAID);
+            Order order = orderRepository.findById(paymentDto.getOrderId()).orElseThrow(() -> new RuntimeException("Order not found"));
+            shippingService.createShipping(ShippingCreateRequest.builder()
+                            .auctionId(order.getAuction().getId())
+                            .sellerId(order.getAuction().getProduct().getSeller().getId())
+                            .buyerId(order.getUser().getId())
+                    .build());
         }
 
         model.addAttribute("orderId", paymentDto.getOrderId());
