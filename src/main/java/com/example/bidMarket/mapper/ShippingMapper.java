@@ -26,20 +26,27 @@ public class ShippingMapper {
 
     public ShippingResponse shippingToShippingResponse(Shipping shipping){
         List<ProductImage> productImageList = shipping.getAuction().getProduct().getProductImages();
-        String productImageUrl = null;
-        for (int i = 0; i < productImageList.size(); i++) {
-            if (productImageList.get(i).isPrimary()) {
-                productImageUrl = productImageList.get(i).getImageUrl();
-                break;
-            }
-        }
+//        String productImageUrl = null;
+//        for (int i = 0; i < productImageList.size(); i++) {
+//            if (productImageList.get(i).isPrimary()) {
+//                productImageUrl = productImageList.get(i).getImageUrl();
+//                break;
+//            }
+//        }
         return ShippingResponse.builder()
                 .id(shipping.getId())
                 .auctionId(shipping.getAuction().getId())
                 .buyerId(shipping.getBuyer().getId())
                 .sellerId(shipping.getSeller().getId())
                 .productName(shipping.getAuction().getProduct().getName())
-                .productImageUrl(productImageUrl)
+                .productImageUrl(!productImageList.isEmpty()
+                        ? productImageList
+                        .stream()
+                        .filter(ProductImage::isPrimary)
+                        .findFirst()
+                        .map(ProductImage::getImageUrl)
+                        .orElse(productImageList.get(0).getImageUrl())
+                        : null)
                 .shopName(shipping.getSeller().getProfile().getFullName())
                 .quantity(1)
                 .price(shipping.getPrice())
