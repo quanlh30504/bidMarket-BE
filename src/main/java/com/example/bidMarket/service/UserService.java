@@ -30,6 +30,7 @@ public interface UserService {
     void updateAvatar(UUID userId, String imageUrl);
     AccountInfo getAccountInfoByUserId(UUID userId);
     void banUser(UUID userId);
+    void unBanUser(UUID userId);
 
 
     public Page<User> searchUsers(String email, Role role, Boolean isBanned, Boolean isVerified,

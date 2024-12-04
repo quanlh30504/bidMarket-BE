@@ -69,6 +69,11 @@ public class UserController {
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+        if (user.isBanned()){
+            logger.warn("Account " + loginRequest.getEmail() + " is banned");
+            throw new AppException(ErrorCode.USER_IS_BANNED);
+        }
+
         if (!user.isVerified()){
             logger.warn("Email " + loginRequest.getEmail() + " is not verified");
             throw new AppException(ErrorCode.USER_IS_NOT_VERIFIED);
@@ -201,6 +206,11 @@ public class UserController {
     @PutMapping("/banUser/{userId}")
     public void banUser(@PathVariable UUID userId) {
         userService.banUser(userId);
+    }
+
+    @PutMapping("/unBanUser/{userId}")
+    public void unBanUser(@PathVariable UUID userId) {
+        userService.unBanUser(userId);
     }
 
 }

@@ -13,6 +13,7 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXIST(1009, "Email already exists"),
     USER_WAS_VERIFIED(1010, "Email already verified"),
     USER_IS_NOT_VERIFIED(1011, "Email is not verified"),
+    USER_IS_BANNED(1012, "Your account is banned"),
 
     // Validation errors (2xxx)
     INVALID_REQUEST(2001, "Invalid request format"),

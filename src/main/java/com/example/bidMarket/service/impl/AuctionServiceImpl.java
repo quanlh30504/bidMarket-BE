@@ -272,7 +272,6 @@ public class AuctionServiceImpl implements AuctionService {
                 return;
             }
 
-
             Bid bid = winBid.get();
             auction.setWinner(bid.getUser().getEmail());
             OrderDto orderDto = OrderDto.builder()
