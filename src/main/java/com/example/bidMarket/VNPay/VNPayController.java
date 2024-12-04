@@ -70,6 +70,7 @@ public class VNPayController {
                             .auctionId(order.getAuction().getId())
                             .sellerId(order.getAuction().getProduct().getSeller().getId())
                             .buyerId(order.getUser().getId())
+                            .price(order.getTotalAmount())
                     .build());
         }
 

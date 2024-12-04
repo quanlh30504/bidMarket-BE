@@ -82,7 +82,6 @@ public class AuctionController {
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDirection) {
 
         log.info("Start search auction");
-        log.info("Start search related auction id: " + hasNotId);
         List<CategoryType> categoryTypeList = new ArrayList<>();
         if (categoryType != null) {
             categoryTypeList = categoryType.stream()

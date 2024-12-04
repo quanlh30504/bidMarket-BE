@@ -14,11 +14,16 @@ import com.example.bidMarket.repository.ShippingRepository;
 import com.example.bidMarket.repository.UserRepository;
 import com.example.bidMarket.service.ShippingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -56,8 +61,21 @@ public class ShippingServiceImpl implements ShippingService {
         shipping.setAuction(auction);
         shipping.setSeller(seller);
         shipping.setBuyer(buyer);
+        shipping.setPrice(request.getPrice());
         shipping.setStatus(ShippingStatus.PENDING);
         shipping.setTrackingNumber(trackingNumber);
         return shippingMapper.shippingToShippingDto(shippingRepository.save(shipping));
+    }
+
+    @Override
+    public Page<Shipping> getShippingByBuyer(UUID buyerId, int page, int size, String sortField, String sortDirection) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortField));
+        return shippingRepository.findByBuyerId(buyerId, pageable);
+    }
+
+    @Override
+    public Page<Shipping> getShippingBuySeller(UUID sellerId, int page, int size, String sortField, String sortDirection) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortField));
+        return shippingRepository.findBySellerId(sellerId, pageable);
     }
 }

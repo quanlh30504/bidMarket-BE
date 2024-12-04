@@ -4,6 +4,7 @@ import com.example.bidMarket.Enum.ShippingStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -37,6 +38,9 @@ public class Shipping {
     @Column(name = "shipping_status", columnDefinition = "ENUM('PENDING','SHIPPED','IN_TRANSIT','DELIVERED')", nullable = false)
     private ShippingStatus status = ShippingStatus.PENDING;
 
+    @Column(name = "price")
+    private BigDecimal price;
+
     @Column(name = "tracking_number", length = 100)
     private String trackingNumber;
 
@@ -48,6 +52,21 @@ public class Shipping {
 
     @Column(name = "actual_delivery")
     private LocalDateTime actualDelivery;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void create(){
+        createdAt = LocalDateTime.now();
+    }
+    @PreUpdate
+    public void update(){
+        updatedAt = LocalDateTime.now();
+    }
 
     // Getters and setters
     // Constructor
