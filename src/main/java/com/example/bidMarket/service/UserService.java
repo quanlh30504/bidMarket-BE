@@ -29,6 +29,8 @@ public interface UserService {
     ProfileDto updateProfile(UUID userId, ProfileDto profileDto);
     void updateAvatar(UUID userId, String imageUrl);
     AccountInfo getAccountInfoByUserId(UUID userId);
+    void banUser(UUID userId);
+
 
     public Page<User> searchUsers(String email, Role role, Boolean isBanned, Boolean isVerified,
                                   int page, int size, String sortBy, String sortDirection);

@@ -115,7 +115,7 @@ public class BidServiceImpl implements BidService {
         }
         Bid saveBid = bidRepository.save(bid);
 
-        simpMessagingTemplate.convertAndSend("/topic/bids/auctionId/" + saveBid.getAuction().getId(),
+        simpMessagingTemplate.convertAndSend("/topic/auction-bids/auctionId/" + saveBid.getAuction().getId(),
                 new BidEvent("create",bidMapper.bidToBidDto(saveBid)));
 
 //        notificationService.createNotification(CreateNotificationRequest.builder()

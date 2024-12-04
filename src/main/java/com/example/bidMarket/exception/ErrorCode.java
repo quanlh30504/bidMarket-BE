@@ -100,6 +100,9 @@ public enum ErrorCode {
     ORDER_NOT_FOUND(13001,"Order not found"),
     ORDER_UPDATE_STATUS(13002, "Update status order failed"),
 
+    //Address
+    ADDRESS_NOT_FOUND(14001, "Address not found"),
+
     // Uncategorized errors (9999)
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error");
 
