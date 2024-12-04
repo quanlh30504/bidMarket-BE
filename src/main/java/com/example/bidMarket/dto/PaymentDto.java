@@ -20,4 +20,5 @@ public class PaymentDto {
     private PaymentStatus status;
     private String bankCode;
     private LocalDateTime paymentDate;
+    String productImageUrl;
 }

@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Repository
 public interface BidRepository extends JpaRepository<Bid, UUID> {
+    Optional<Bid> findFirstByUserIdAndAuctionIdOrderByBidAmountDesc(UUID userId, UUID auctionId);
 
     Optional<Bid> findFirstByAuctionIdAndStatusOrderByBidAmountDesc(UUID auctionId, BidStatus status);
 

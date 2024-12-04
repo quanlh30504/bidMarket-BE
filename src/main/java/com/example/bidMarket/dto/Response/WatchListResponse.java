@@ -22,5 +22,5 @@ public class WatchListResponse {
     LocalDateTime endTime;
     BigDecimal currentPrice;
     AuctionStatus status;
-    long bidCount;
+    BigDecimal bidAmount;
 }

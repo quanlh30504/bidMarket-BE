@@ -22,6 +22,9 @@ public class WatchListController {
     @Autowired
     private WatchListServiceImpl watchlistService;
 
+    @Autowired
+    private WatchListMapper watchListMapper;
+
     @GetMapping("/user/{userId}")
     public PaginatedResponse<WatchListResponse> getWatchListByUserId(
             @PathVariable UUID userId,
@@ -33,7 +36,7 @@ public class WatchListController {
     ) {
         Page<WatchList> watchListPage = watchlistService.getWatchlistByUserId(userId, page, size, sortBy, sortDirection);
         List<WatchListResponse> content = watchListPage.getContent().stream()
-                .map(WatchListMapper::watchlistToWatchlistResponse)
+                .map(watchList -> watchListMapper.watchlistToWatchlistResponse(watchList, userId))
                 .toList();
         return new PaginatedResponse<>(
                 watchListPage.getNumber(),
