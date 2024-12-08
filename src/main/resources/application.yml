@@ -41,6 +41,7 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    driver-class-name : com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
@@ -106,8 +107,8 @@ payment:
 mailServer:
   host: smtp.gmail.com
   port: 587
-  email: naitesbi@gmail.com
-  password: wdqtvrdkrwytgkkc
+  email: ${MAIL_EMAIL}
+  password: ${MAIL_PASSWORD}
   properties:
     mail:
       smtp:

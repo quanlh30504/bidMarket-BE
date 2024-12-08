@@ -31,7 +31,7 @@ public class AuctionMapper {
         auction.setLastBidTime(auctionCreateRequest.getStartTime());
         auction.setCurrentPrice(auctionCreateRequest.getStartingPrice());
         auction.setStartingPrice(auctionCreateRequest.getStartingPrice());
-        auction.setStatus(AuctionStatus.CANCELED);
+        auction.setStatus(AuctionStatus.PENDING);
         auction.setMinimumBidIncrement(auctionCreateRequest.getMinimumBidIncrement());
         auction.setExtensionCount(0);
         auction.setProduct(product);

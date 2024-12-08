@@ -45,6 +45,12 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.createAuction(request));
     }
 
+    @DeleteMapping ("/{id}")
+    public ResponseEntity<String> deleteAuction(@PathVariable UUID id) {
+        auctionService.deleteAuction(id);
+        return ResponseEntity.ok("Delete successfully auction id " + id);
+    }
+
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AuctionDto> updateAuction(
             @PathVariable UUID id,
@@ -104,7 +110,7 @@ public class AuctionController {
         );
     }
 
-    @GetMapping("/{sellerId}/search")
+//    @GetMapping("/{sellerId}/search")
 
 
 
