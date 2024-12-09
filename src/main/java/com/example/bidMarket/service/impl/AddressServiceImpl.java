@@ -26,11 +26,11 @@ public class AddressServiceImpl implements AddressService {
         if (address == null){
             return createAddress(addressDto);
         }else{
-//            address.setAddressType(addressDto.getAddressType());
+            address.setAddressType(addressDto.getAddressType());
             address.setCity(addressDto.getCity());
             address.setCountry(addressDto.getCountry());
-//            address.setState(addressDto.getState());
-//            address.setPostalCode(addressDto.getPostalCode());
+            address.setState(addressDto.getState());
+            address.setPostalCode(addressDto.getPostalCode());
             address.setStreetAddress(addressDto.getStreetAddress());
             return addressMapper.addressToAddressDto(addressRepository.save(address));
         }

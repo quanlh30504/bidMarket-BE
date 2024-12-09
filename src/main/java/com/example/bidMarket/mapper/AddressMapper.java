@@ -20,7 +20,7 @@ public class AddressMapper {
 
         return Address.builder()
                 .user(user)
-//                .addressType(addressDto.getAddressType())
+                .addressType(addressDto.getAddressType())
                 .streetAddress(addressDto.getStreetAddress())
 //                .state(addressDto.getState())
 //                .postalCode(addressDto.getPostalCode())
@@ -31,13 +31,13 @@ public class AddressMapper {
 
     public AddressDto addressToAddressDto(Address address){
         return AddressDto.builder()
-//                .id(address.getId())
+                .id(address.getId())
                 .userId(address.getUser().getId())
-//                .addressType(address.getAddressType())
+                .addressType(address.getAddressType())
                 .streetAddress(address.getStreetAddress())
                 .city(address.getCity())
-//                .postalCode(address.getPostalCode())
-//                .state(address.getState())
+                .postalCode(address.getPostalCode())
+                .state(address.getState())
                 .country(address.getCountry())
                 .build();
     }

@@ -12,12 +12,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddressDto {
-//    private UUID id;
+    private UUID id;
     private UUID userId;
-//    private AddressType addressType;
+    private AddressType addressType;
     private String streetAddress;
     private String city;
-//    private String state;
-//    private String postalCode;
+    private String state;
+    private String postalCode;
     private String country;
 }
