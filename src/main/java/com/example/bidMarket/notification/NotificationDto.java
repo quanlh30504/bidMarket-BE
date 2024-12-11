@@ -18,6 +18,7 @@ public class NotificationDto {
     private UUID userId;
     private boolean read;
     private LocalDateTime createdAt;
+    private String metadata;
 
     public static NotificationDto fromEntity(Notification notification) {
         return NotificationDto.builder()
@@ -26,6 +27,7 @@ public class NotificationDto {
                 .userId(notification.getUserId())
                 .read(notification.isRead())
                 .createdAt(notification.getCreatedAt())
+                .metadata(notification.getMetadata())
                 .build();
     }
 }

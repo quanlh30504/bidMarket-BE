@@ -19,4 +19,5 @@ public class CreateNotificationRequest {
 
     @NotNull(message = "User ID is required")
     private UUID userId;
+    private String metadata;
 }

@@ -1,10 +1,8 @@
 package com.example.bidMarket.service.impl;
 
-import com.example.bidMarket.Enum.AuctionStatus;
 import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.dto.BidDto;
 import com.example.bidMarket.dto.BidEvent;
-import com.example.bidMarket.dto.CommentEvent;
 import com.example.bidMarket.dto.Request.BidCreateRequest;
 import com.example.bidMarket.dto.Response.BidCreateResponse;
 import com.example.bidMarket.exception.AppException;
@@ -12,9 +10,7 @@ import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.BidMapper;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Bid;
-import com.example.bidMarket.model.Payment;
 import com.example.bidMarket.model.User;
-import com.example.bidMarket.notification.CreateNotificationRequest;
 import com.example.bidMarket.notification.NotificationService;
 import com.example.bidMarket.repository.AuctionRepository;
 import com.example.bidMarket.repository.BidRepository;
@@ -24,7 +20,6 @@ import com.example.bidMarket.service.BidService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +27,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -95,6 +89,7 @@ public class BidServiceImpl implements BidService {
 
         // Kiểm tra thời gian đặt lệnh
         if (bidRequest.getBidTime().isBefore(auction.getStartTime()) || bidRequest.getBidTime().isAfter(auction.getEndTime())
+
             || bidRequest.getBidTime().isBefore(auction.getLastBidTime())
         ) {
             log.error("Bid time is invalid");

@@ -12,6 +12,7 @@ import com.example.bidMarket.exception.ErrorCode;
 import com.example.bidMarket.mapper.AuctionMapper;
 import com.example.bidMarket.mapper.ProductMapper;
 import com.example.bidMarket.model.*;
+import com.example.bidMarket.notification.NotificationService;
 import com.example.bidMarket.repository.*;
 import com.example.bidMarket.service.AuctionService;
 import com.example.bidMarket.service.BidService;
@@ -32,9 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -49,12 +48,13 @@ public class AuctionServiceImpl implements AuctionService {
     private final BidRepository bidRepository;
 
     private final AuctionMapper auctionMapper;
-
+    private final NotificationService notificationService;
     private final ProductService productService;
     private final OrderService orderService;
     private final BidService bidService;
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final WatchListRepository watchListRepository;
 
     @Override
     public List<AuctionDto> getAllAuction() {
@@ -105,9 +105,9 @@ public class AuctionServiceImpl implements AuctionService {
         for (Auction auction : expiredAuctions) {
             log.warn("Close auction id: " + auction.getId());
             closeAuction(auction.getId());
-            messagingTemplate.convertAndSend("/topic/auction-status", auction);
         }
     }
+
 
     @Override
     @Transactional
@@ -261,31 +261,30 @@ public class AuctionServiceImpl implements AuctionService {
     public void closeAuction(UUID auctionId) {
         Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AppException(ErrorCode.AUCTION_NOT_FOUND));
-        if (auction.getStatus() == AuctionStatus.OPEN){
+
+        if (auction.getStatus() == AuctionStatus.OPEN) {
             auction.setStatus(AuctionStatus.CLOSED);
             auctionRepository.save(auction);
+        }
 
-            Optional <Bid> winBid = bidRepository.findFirstByAuctionIdAndStatusOrderByBidAmountDesc(auction.getId(), BidStatus.VALID);
-            if (winBid.isEmpty()){
-//                throw new AppException(ErrorCode.AUCTION_NOT_HAVE_BID);
-                log.warn("Auction no have winner");
-                return;
-            }
+        Optional<Bid> winBid = bidRepository.findFirstByAuctionIdAndStatusOrderByBidAmountDesc(
+                auction.getId(),
+                BidStatus.VALID);
 
+        if (winBid.isPresent()) {
             Bid bid = winBid.get();
             auction.setWinner(bid.getUser().getEmail());
             OrderDto orderDto = OrderDto.builder()
                     .userId(bid.getUser().getId())
                     .auctionId(auction.getId())
                     .totalAmount(bid.getBidAmount())
-                    .paymentDueDate(LocalDateTime.now().plusDays(5)) // Hard code: payment due date is 5 days from created order date.
+                    .paymentDueDate(LocalDateTime.now().plusDays(5))
                     .status(OrderStatus.PENDING)
                     .build();
             // Create order
             orderService.createOrder(orderDto);
-        }else {
-            throw new AppException(ErrorCode.AUCTION_CLOSE_FAILED);
         }
+        notificationService.sendAuctionClosedNotification(auction);
     }
 
     @Override

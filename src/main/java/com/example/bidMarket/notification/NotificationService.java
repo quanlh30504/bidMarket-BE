@@ -1,8 +1,12 @@
 package com.example.bidMarket.notification;
 
-import com.example.bidMarket.Enum.BidStatus;
 import com.example.bidMarket.model.Auction;
 import com.example.bidMarket.model.Bid;
+
+import com.example.bidMarket.repository.BidRepository;
+import com.example.bidMarket.repository.WatchListRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,22 +17,19 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final BidRepository bidRepository;
+    private final WatchListRepository watchListRepository;
 
-    public NotificationService(NotificationRepository notificationRepository,
-                               SimpMessagingTemplate messagingTemplate) {
-        this.notificationRepository = notificationRepository;
-        this.messagingTemplate = messagingTemplate;
-    }
 
     public NotificationDto createNotification(CreateNotificationRequest request) {
         log.info("Creating notification for user: {}", request.getUserId());
@@ -112,10 +113,20 @@ public class NotificationService {
                 auction.getProduct().getName(),
                 newBidAmount);
 
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("auctionId", auction.getId().toString());
+        metadata.put("type", "OUTBID");
+        metadata.put("bidAmount", newBidAmount);
+
+        createAndSendNotification(userId, message, metadata);
+    }
+
+    private void createAndSendNotification(UUID userId, String message, Map<String, Object> metadata) {
         Notification notification = Notification.builder()
                 .message(message)
                 .userId(userId)
                 .isRead(false)
+                .metadata(convertToJson(metadata))
                 .build();
 
         notification = notificationRepository.save(notification);
@@ -124,17 +135,56 @@ public class NotificationService {
         sendNotificationToUser(userId, notificationDto);
     }
 
-    private void createAndSendNotification(UUID userId, String message) {
-        Notification notification = Notification.builder()
-                .message(message)
-                .userId(userId)
-                .isRead(false)
-                .build();
+    private String convertToJson(Map<String, Object> metadata) {
+        try {
+            return new ObjectMapper().writeValueAsString(metadata);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting metadata to JSON", e);
+            return "{}";
+        }
+    }
 
-        notification = notificationRepository.save(notification);
-        NotificationDto notificationDto = NotificationDto.fromEntity(notification);
 
-        sendNotificationToUser(userId, notificationDto);
+    public void sendAuctionClosedNotification(Auction auction) {
+        List<UUID> bidderIds = bidRepository.findByAuctionId(auction.getId()).stream()
+                .map(bid -> bid.getUser().getId())
+                .distinct()
+                .toList();
+
+        List<UUID> watchlistUserIds = watchListRepository.findByAuctionId(auction.getId()).stream()
+                .map(watchList -> watchList.getUser().getId())
+                .toList();
+
+        Optional<Bid> winningBid = bidRepository.findFirstByAuctionIdOrderByBidAmountDesc(auction.getId());
+        UUID winnerId = winningBid.map(bid -> bid.getUser().getId()).orElse(null);
+
+        Set<UUID> allUsersToNotify = new HashSet<>();
+        allUsersToNotify.addAll(bidderIds);
+        allUsersToNotify.addAll(watchlistUserIds);
+
+        for (UUID userId : allUsersToNotify) {
+            String message;
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("auctionId", auction.getId().toString());
+            metadata.put("type", "AUCTION_CLOSED");
+
+            if (winnerId != null && userId.equals(winnerId)) {
+                message = String.format("Congratulations! You've won the auction for %s with a bid of $%.2f",
+                        auction.getTitle(),
+                        auction.getCurrentPrice());
+                metadata.put("won", true);
+            } else if (bidderIds.contains(userId)) {
+                message = String.format("The auction for %s has ended. Final price: $%.2f",
+                        auction.getTitle(),
+                        auction.getCurrentPrice());
+            } else {
+                message = String.format("An auction you're watching has ended: %s. Final price: $%.2f",
+                        auction.getTitle(),
+                        auction.getCurrentPrice());
+            }
+
+            createAndSendNotification(userId, message, metadata);
+        }
     }
 
 }

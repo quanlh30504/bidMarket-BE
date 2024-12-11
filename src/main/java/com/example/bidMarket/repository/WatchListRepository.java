@@ -15,5 +15,6 @@ import java.util.List;
 public interface WatchListRepository extends JpaRepository<WatchList, UUID> {
    Page<WatchList> findAllByUserId(UUID userId, Pageable pageable);
 
+   List<WatchList> findByAuctionId(UUID auctionId);
    Optional<WatchList> findByUserIdAndAuctionId(UUID userId, UUID auctionId);
 }

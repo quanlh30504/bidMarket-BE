@@ -7,6 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,6 +23,9 @@ public interface BidRepository extends JpaRepository<Bid, UUID> {
 
     Page<Bid> findAllByAuctionIdAndStatus(UUID auctionId, BidStatus status, Pageable pageable);
 
-    // phương thức đếm số lượng Bid có auctionId và status
+    Optional<Bid> findTopByAuctionIdOrderByBidAmountDesc(UUID auctionId);
+    Optional<Bid> findFirstByAuctionIdOrderByBidAmountDesc(UUID auctionId);
     long countByAuctionIdAndStatus(UUID auctionId, BidStatus status);
+    List<Bid> findByAuctionId(UUID auctionId);
+    List<Bid> findByAuctionIdAndStatus(UUID id, BidStatus bidStatus);
 }

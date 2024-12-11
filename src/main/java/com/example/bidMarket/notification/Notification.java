@@ -38,4 +38,7 @@ public class Notification {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(columnDefinition = "json")
+    private String metadata;
 }
