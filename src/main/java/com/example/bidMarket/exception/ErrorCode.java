@@ -88,6 +88,8 @@ public enum ErrorCode {
     FILE_FORMAT_UNSUPPORTED(10003, "Unsupported file format"),
     FILE_TOO_LARGE(10004, "File size exceeds the limit"),
     FILE_DELETE_FAILED(10005, "Failed to delete file"),
+    FOLDER_DELETE_FAILED(10006, "Failed to delete folder"),
+
     // Payment/Transaction errors (11xxx)
     PAYMENT_FAILED(11001, "Payment processing failed"),
     INSUFFICIENT_FUNDS(11002, "Insufficient funds"),

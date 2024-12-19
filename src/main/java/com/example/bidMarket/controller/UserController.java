@@ -24,6 +24,7 @@ import com.example.bidMarket.service.VerifyEmailService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,6 +48,11 @@ public class UserController {
     private final UserMapper userMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
+    @Value("${cookieConfig.sameSite}")
+    private String cookieSameSite;
+    @Value("${cookieConfig.secure}")
+    private String cookieSecure;
 
     public UserController(UserService userService, UserRepository userRepository, VerifyEmailService verifyEmailService, EmailProvider emailProvider, UserMapper userMapper) {
         this.userService = userService;
@@ -89,14 +96,40 @@ public class UserController {
         }
     }
 
+//    private void createAuthCookies(HttpServletResponse response, String refreshToken) {
+//        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+//        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setSecure(false); // chưa có https
+//        refreshTokenCookie.setPath("/api/users/refresh-token");
+//        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+////        refreshTokenCookie.setSameSite("None");
+//        response.addCookie(refreshTokenCookie);
+//    }
+
+//    private void createAuthCookies(HttpServletResponse response, String refreshToken) {
+//        response.setHeader("Set-Cookie",
+//                "refreshToken=" + refreshToken +
+//                        "; HttpOnly; Path=/api/users/refresh-token; Max-Age=" + (7 * 24 * 60 * 60) +
+//                        "; SameSite=None");
+//    }
+
     private void createAuthCookies(HttpServletResponse response, String refreshToken) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false); // chưa có https
         refreshTokenCookie.setPath("/api/users/refresh-token");
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-//        refreshTokenCookie.setSameSite("None");
-        response.addCookie(refreshTokenCookie);
+        String sameSiteAttribute = "; SameSite=" + cookieSameSite;
+        if (Objects.equals(cookieSecure, "True")) {
+            refreshTokenCookie.setSecure(true);
+        }
+
+        response.setHeader("Set-Cookie",
+                "refreshToken=" + refreshToken +
+                        "; HttpOnly" +
+                        (refreshTokenCookie.getSecure() ? "; Secure" : "") +
+                        "; Path=" + refreshTokenCookie.getPath() +
+                        "; Max-Age=" + refreshTokenCookie.getMaxAge() +
+                        sameSiteAttribute);
     }
 
     @PostMapping("/refresh-token")

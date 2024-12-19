@@ -1,6 +1,7 @@
 package com.example.bidMarket.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.handler.invocation.HandlerMethodArgumentResolver;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -18,6 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketAuthChannelInterceptor authInterceptor;
+    @Value("${FRONTEND_URL}")
+    private String frontendUrl;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -28,8 +31,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:3000")
+        registry.addEndpoint("/api/ws")
+                .setAllowedOrigins(frontendUrl)
                 .withSockJS();
     }
 

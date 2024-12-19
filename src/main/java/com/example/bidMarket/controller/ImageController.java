@@ -90,4 +90,14 @@ public class ImageController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @DeleteMapping("/folder")
+    public ResponseEntity<Void> deleteFolder(@RequestParam String folderPrefix) {
+        try {
+            amazonS3Service.deleteFolder(folderPrefix);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

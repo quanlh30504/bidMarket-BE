@@ -4,6 +4,7 @@ import com.example.bidMarket.security.JwtAuthenticationFilter;
 import com.example.bidMarket.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
@@ -42,17 +43,20 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URL = {
             "/api/users/signup",
             "/api/users/signin",
+            "/api/users/logout",
+            "/api/users/refresh-token",
             "/api/auctions/**",
-            "/submitOrder",
-            "/vnpay-payment-return",
+            "/api/VNPay/submitOrder",
+            "/api/VNPay/vnpay-payment-return",
             "/api/bids/**",
             "/api/products/**",
             "/api/messages/**",
+            "/api/emails/**",
             "/api/**",
-            "/emails/**",
-            "/api/users/refresh-token",
-            "/api/users/logout"
     };
+
+    @Value("${FRONTEND_URL}")
+    private String frontendUrl;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
@@ -92,7 +96,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList(frontendUrl));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "x-requested-with"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));

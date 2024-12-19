@@ -33,14 +33,17 @@ public class VNPayService {
         String vnp_IpAddr = vnPayConfig.getIpAddress(request);
         String vnp_TmnCode = vnPayConfig.getVnp_TmnCode();
         String orderType = vnPayConfig.getVnp_OrderType();
-        long amount = order.getTotalAmount().longValue();
+        // long amount = order.getTotalAmount().longValue();
+        double exchangeRate = 24000;
+        long amountInUSD = order.getTotalAmount().longValue();
+        long amountInVND = Math.round(amountInUSD * exchangeRate);
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf(amount*100));
-        vnp_Params.put("vnp_CurrCode", "USD");
+        vnp_Params.put("vnp_Amount", String.valueOf(amountInVND*100));
+        vnp_Params.put("vnp_CurrCode", "VND");
 
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_OrderInfo", orderInfo);
@@ -53,8 +56,9 @@ public class VNPayService {
         vnp_Params.put("vnp_ReturnUrl", urlReturn);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
-        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 

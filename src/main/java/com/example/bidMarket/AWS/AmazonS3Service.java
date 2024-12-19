@@ -3,10 +3,7 @@ package com.example.bidMarket.AWS;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import com.example.bidMarket.dto.Response.PreSignedUrlResponse;
 import com.example.bidMarket.exception.AppException;
 import com.example.bidMarket.exception.ErrorCode;
@@ -20,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
 @Slf4j
@@ -97,6 +96,35 @@ public class AmazonS3Service {
         }
     }
 
+    public void deleteFolder(String folderPrefix) {
+        try {
+            ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
+                    .withBucketName(bucketName)
+                    .withPrefix(folderPrefix); // Prefix của "folder"
+
+            ListObjectsV2Result result;
+            do {
+                result = amazonS3Client.listObjectsV2(listObjectsRequest);
+
+                List<DeleteObjectsRequest.KeyVersion> keysToDelete = result.getObjectSummaries().stream()
+                        .map(S3ObjectSummary::getKey)
+                        .map(DeleteObjectsRequest.KeyVersion::new)
+                        .collect(Collectors.toList());
+
+                if (!keysToDelete.isEmpty()) {
+                    DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucketName)
+                            .withKeys(keysToDelete);
+                    amazonS3Client.deleteObjects(deleteObjectsRequest);
+                    log.info("Successfully deleted {} objects in folder: {}", keysToDelete.size(), folderPrefix);
+                }
+
+                listObjectsRequest.setContinuationToken(result.getNextContinuationToken());
+            } while (result.isTruncated());
+        } catch (Exception e) {
+            log.error("Error deleting folder from S3: {}", e.getMessage());
+            throw new AppException(ErrorCode.FOLDER_DELETE_FAILED);
+        }
+    }
 
     public String getFileUrl(String s3Key) {
         return amazonS3Client.getUrl(bucketName, s3Key).toString();

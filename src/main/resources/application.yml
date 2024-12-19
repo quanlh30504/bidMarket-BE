@@ -116,3 +116,7 @@ mailServer:
         starttls:
           enable: true
   isSSL: false
+
+cookieConfig:
+  sameSite: ${COOKIE_SAME_SITE}
+  secure: ${COOKIE_SECURE}
